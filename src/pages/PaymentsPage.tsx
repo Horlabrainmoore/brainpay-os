@@ -151,7 +151,11 @@ export default function PaymentsPage() {
 
             <div className="card-gradient rounded-lg border border-border p-4">
               <h3 className="text-sm font-semibold text-foreground mb-3">Recent Payments</h3>
-              <TransactionList transactions={recentTransactions.filter(t => t.type === 'payment')} compact />
+              {recentPayments.length === 0 ? (
+                <p className="text-xs text-muted-foreground p-2">No payments yet.</p>
+              ) : (
+                <TransactionList transactions={recentPayments} compact />
+              )}
             </div>
           </div>
         </div>

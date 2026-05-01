@@ -7,13 +7,45 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTrades } from "@/hooks/useTrades";
+import { useTransactions } from "@/hooks/useTransactions";
+import { usePrices } from "@/hooks/usePrices";
 
 export default function TradingPage() {
   const [selectedPair, setSelectedPair] = useState("BTC/USDC");
+  const { addTrade, trades } = useTrades();
+  const { addTransaction } = useTransactions();
+  const { prices } = usePrices(["BTC", "ETH", "SOL"]);
 
-  const handleTrade = (type: 'buy' | 'sell') => {
+  const baseSymbol = selectedPair.split("/")[0];
+  const livePrice = prices[baseSymbol]?.price ?? null;
+
+  const handleTrade = async (type: 'buy' | 'sell') => {
+    const price = livePrice ?? 65120.5;
+    const amount = 0.01;
+    const { error } = await addTrade({
+      symbol: selectedPair,
+      side: type,
+      amount,
+      entry_price: price,
+      confidence: 80,
+      signal_id: null,
+    });
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    await addTransaction({
+      type: 'trade',
+      asset: baseSymbol,
+      amount,
+      usd_value: amount * price,
+      status: 'completed',
+      description: `${type.toUpperCase()} ${amount} ${baseSymbol} @ $${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+      metadata: { side: type, pair: selectedPair },
+    });
     toast.success(`${type.toUpperCase()} order placed for ${selectedPair}`, {
-      description: "Simulated trade executed successfully"
+      description: `Filled @ $${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
     });
   };
 
