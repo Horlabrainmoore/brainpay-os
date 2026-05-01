@@ -57,6 +57,6 @@ export async function decryptValue(
   const key = await deriveKey(passphrase, userId);
   const iv = b64decode(ivB64);
   const ct = b64decode(ciphertext);
-  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct);
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv as BufferSource }, key, ct as BufferSource);
   return dec.decode(pt);
 }
