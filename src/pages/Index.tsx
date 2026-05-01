@@ -2,14 +2,34 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { TransactionList } from "@/components/TransactionList";
 import { SignalCard } from "@/components/SignalCard";
-import { wallets, recentTransactions, tradeSignals, balanceHistory, tradingHistory, aiInsights } from "@/lib/mock-data";
+import { wallets, recentTransactions, tradeSignals, balanceHistory, tradingHistory, aiInsights, Transaction } from "@/lib/mock-data";
 import { Wallet, TrendingUp, CreditCard, Brain, ArrowUpRight, Shield } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { cn } from "@/lib/utils";
-
-const totalBalance = wallets.reduce((sum, w) => sum + w.usdValue, 0);
+import { usePrices } from "@/hooks/usePrices";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useMemo } from "react";
 
 export default function Dashboard() {
+  const { prices, connected } = usePrices(["BTC", "ETH", "SOL"]);
+  const { transactions } = useTransactions();
+
+  const totalBalance = useMemo(
+    () => wallets.reduce((sum, w) => sum + w.balance * (prices[w.symbol]?.price ?? (w.usdValue / w.balance || 1)), 0),
+    [prices]
+  );
+
+  const dbTxView: Transaction[] = transactions.slice(0, 5).map((t) => ({
+    id: t.id,
+    type: (["send", "receive", "trade", "payment"].includes(t.type) ? t.type : "payment") as Transaction["type"],
+    amount: Number(t.amount),
+    currency: t.asset,
+    description: t.description ?? "",
+    timestamp: t.created_at,
+    status: (["completed", "pending", "failed"].includes(t.status) ? t.status : "completed") as Transaction["status"],
+    route: (t.metadata?.route as Transaction["route"]) ?? undefined,
+  }));
+  const txToShow = dbTxView.length > 0 ? dbTxView : recentTransactions.slice(0, 5);
   return (
     <DashboardLayout title="Dashboard" subtitle="Overview of your financial operations">
       <div className="space-y-6">
