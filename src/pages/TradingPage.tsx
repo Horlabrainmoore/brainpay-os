@@ -7,13 +7,45 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTrades } from "@/hooks/useTrades";
+import { useTransactions } from "@/hooks/useTransactions";
+import { usePrices } from "@/hooks/usePrices";
 
 export default function TradingPage() {
   const [selectedPair, setSelectedPair] = useState("BTC/USDC");
+  const { addTrade, trades } = useTrades();
+  const { addTransaction } = useTransactions();
+  const { prices } = usePrices(["BTC", "ETH", "SOL"]);
 
-  const handleTrade = (type: 'buy' | 'sell') => {
+  const baseSymbol = selectedPair.split("/")[0];
+  const livePrice = prices[baseSymbol]?.price ?? null;
+
+  const handleTrade = async (type: 'buy' | 'sell') => {
+    const price = livePrice ?? 65120.5;
+    const amount = 0.01;
+    const { error } = await addTrade({
+      symbol: selectedPair,
+      side: type,
+      amount,
+      entry_price: price,
+      confidence: 80,
+      signal_id: null,
+    });
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    await addTransaction({
+      type: 'trade',
+      asset: baseSymbol,
+      amount,
+      usd_value: amount * price,
+      status: 'completed',
+      description: `${type.toUpperCase()} ${amount} ${baseSymbol} @ $${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+      metadata: { side: type, pair: selectedPair },
+    });
     toast.success(`${type.toUpperCase()} order placed for ${selectedPair}`, {
-      description: "Simulated trade executed successfully"
+      description: `Filled @ $${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
     });
   };
 
@@ -22,7 +54,7 @@ export default function TradingPage() {
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard title="Win Rate" value="73.2%" change="+2.1%" changeType="positive" icon={Target} subtitle="30d" />
-          <MetricCard title="Total Trades" value="142" change="12 today" changeType="neutral" icon={BarChart3} />
+          <MetricCard title="Total Trades" value={String(trades.length || 142)} change={`${trades.length} executed`} changeType="neutral" icon={BarChart3} />
           <MetricCard title="Avg Return" value="+4.8%" change="per trade" changeType="positive" icon={TrendingUp} />
           <MetricCard title="AI Signals" value="5 active" change="3 high confidence" changeType="positive" icon={Zap} />
         </div>
@@ -64,7 +96,9 @@ export default function TradingPage() {
               <p className="text-xs text-muted-foreground mb-4">Execute simulated trades based on AI signals</p>
               <div className="flex items-center gap-3">
                 <span className="text-sm font-mono font-semibold text-foreground">{selectedPair}</span>
-                <span className="text-sm font-mono text-muted-foreground">$65,120.50</span>
+                <span className="text-sm font-mono text-muted-foreground">
+                  {livePrice ? `$${livePrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "Loading…"}
+                </span>
                 <div className="flex-1" />
                 <Button size="sm" onClick={() => handleTrade('buy')} className="bg-success/20 text-success border border-success/30 hover:bg-success/30">BUY</Button>
                 <Button size="sm" onClick={() => handleTrade('sell')} variant="destructive" className="bg-destructive/20 text-destructive border border-destructive/30 hover:bg-destructive/30">SELL</Button>
