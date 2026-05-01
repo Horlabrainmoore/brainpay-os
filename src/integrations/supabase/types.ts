@@ -14,7 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      notification_prefs: {
+        Row: {
+          email_alerts: boolean
+          payment_updates: boolean
+          push_alerts: boolean
+          security_alerts: boolean
+          trade_signals: boolean
+          updated_at: string
+          user_id: string
+          weekly_summary: boolean
+        }
+        Insert: {
+          email_alerts?: boolean
+          payment_updates?: boolean
+          push_alerts?: boolean
+          security_alerts?: boolean
+          trade_signals?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_summary?: boolean
+        }
+        Update: {
+          email_alerts?: boolean
+          payment_updates?: boolean
+          push_alerts?: boolean
+          security_alerts?: boolean
+          trade_signals?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_summary?: boolean
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          country: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          preferred_currency: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          preferred_currency?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          preferred_currency?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          amount: number
+          confidence: number | null
+          created_at: string
+          entry_price: number
+          exit_price: number | null
+          id: string
+          pnl: number
+          side: string
+          signal_id: string | null
+          status: string
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          confidence?: number | null
+          created_at?: string
+          entry_price: number
+          exit_price?: number | null
+          id?: string
+          pnl?: number
+          side: string
+          signal_id?: string | null
+          status?: string
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          confidence?: number | null
+          created_at?: string
+          entry_price?: number
+          exit_price?: number | null
+          id?: string
+          pnl?: number
+          side?: string
+          signal_id?: string | null
+          status?: string
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          asset: string
+          created_at: string
+          description: string | null
+          id: string
+          metadata: Json
+          status: string
+          type: string
+          usd_value: number
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          asset: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json
+          status?: string
+          type: string
+          usd_value?: number
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          asset?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          metadata?: Json
+          status?: string
+          type?: string
+          usd_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_api_keys: {
+        Row: {
+          created_at: string
+          encrypted_key: string
+          encrypted_secret: string | null
+          id: string
+          iv: string
+          label: string
+          last_used_at: string | null
+          provider: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_key: string
+          encrypted_secret?: string | null
+          id?: string
+          iv: string
+          label: string
+          last_used_at?: string | null
+          provider: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_key?: string
+          encrypted_secret?: string | null
+          id?: string
+          iv?: string
+          label?: string
+          last_used_at?: string | null
+          provider?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
