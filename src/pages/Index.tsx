@@ -98,7 +98,7 @@ export default function Dashboard() {
 
           <div className="card-gradient rounded-lg border border-border p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3">Recent Transactions</h3>
-            <TransactionList transactions={recentTransactions.slice(0, 5)} compact />
+            <TransactionList transactions={txToShow} compact />
           </div>
 
           <div className="card-gradient rounded-lg border border-border p-4">
