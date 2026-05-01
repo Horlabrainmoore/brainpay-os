@@ -34,6 +34,7 @@ const mainItems = [
 const insightItems = [
   { title: "AI Insights", url: "/ai-insights", icon: Brain },
   { title: "System Logs", url: "/logs", icon: FileText },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
