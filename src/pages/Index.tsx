@@ -35,7 +35,7 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard title="Total Balance" value={`$${totalBalance.toLocaleString()}`} change="+3.2%" changeType="positive" icon={Wallet} subtitle="24h" />
+          <MetricCard title="Total Balance" value={`$${totalBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} change={connected ? "Live" : "Connecting…"} changeType={connected ? "positive" : "neutral"} icon={Wallet} subtitle="real-time" />
           <MetricCard title="Trading P&L" value="+$9,600" change="+12.4%" changeType="positive" icon={TrendingUp} subtitle="this month" />
           <MetricCard title="Payments Processed" value="$1,538" change="5 transactions" changeType="neutral" icon={CreditCard} subtitle="this week" />
           <MetricCard title="AI Confidence" value="87%" change="3 active signals" changeType="positive" icon={Brain} subtitle="avg" />
