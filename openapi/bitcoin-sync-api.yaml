@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: BTC Profit Sync Engine API
+  version: 0.1.0
+  description: Bitcoin wallet telemetry and mempool synchronization API.
+paths:
+  /wallets/profit-sync:
+    get:
+      summary: Retrieve the current profit sync state for all wallets
+      responses:
+        '200':
+          description: List of wallet profit sync states
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WalletProfitSync'
+components:
+  schemas:
+    WalletProfitSync:
+      type: object
+      properties:
+        wallet_address:
+          type: string
+        network:
+          type: string
+        asset:
+          type: string
+        event:
+          type: string
+        source:
+          type: string
+        symbol:
+          type: string
+        positions:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              lot:
+                type: number
+              profit_usd:
+                type: number
+        totals:
+          type: object
+          properties:
+            total_buy_lots:
+              type: number
+            total_profit_usd:
+              type: number
+        mempool_cluster:
+          type: object
+          properties:
+            fee_rate:
+              type: string
+            fee_paid:
+              type: string
+            size:
+              type: string
+        status:
+          type: string
+        timestamp:
+          type: string
