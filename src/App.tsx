@@ -13,6 +13,8 @@ import AIInsightsPage from "./pages/AIInsightsPage.tsx";
 import LogsPage from "./pages/LogsPage.tsx";
 import SettingsPage from "./pages/SettingsPage.tsx";
 import AuthPage from "./pages/AuthPage.tsx";
+import LiveBlocksPage from "./pages/LiveBlocksPage.tsx";
+import AddressTxPage from "./pages/AddressTxPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/payments" element={protect(<PaymentsPage />)} />
             <Route path="/ai-insights" element={protect(<AIInsightsPage />)} />
             <Route path="/logs" element={protect(<LogsPage />)} />
+            <Route path="/blocks" element={protect(<LiveBlocksPage />)} />
+            <Route path="/address-lookup" element={protect(<AddressTxPage />)} />
             <Route path="/settings" element={protect(<SettingsPage />)} />
             <Route path="*" element={<NotFound />} />
           </Routes>
