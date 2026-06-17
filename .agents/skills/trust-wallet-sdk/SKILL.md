@@ -5,26 +5,16 @@ description: Trust Wallet open-source libraries — Wallet Core (HD wallets, add
 
 # Trust Wallet SDK & Libraries
 
-Open-source libraries for wallet integration, dApp connectivity, and smart wallets. This skill is a navigation map — load only the reference that matches the task.
+Open-source libraries for wallet integration, dApp connectivity, and smart wallets.
 
 ## Reference Guide
 
-| Task | Reference | Trigger phrases |
-|------|-----------|-----------------|
-| HD wallet, address derivation, tx signing | `references/wallet-core.md` | "wallet core", "derive address", "sign transaction", "mnemonic", "HD key" |
-| Web3 provider, dApp connection | `references/trust-web3-provider.md` | "web3 provider", "dApp integration", "EIP-1193", "injected provider" |
-| Deep links, extension, WalletConnect | `references/trust-developer.md` | "deep link", "browser extension", "WalletConnect", "wc:" |
-| Token logos, metadata, CDN | `references/assets.md` | "token logo", "add asset", "trustwallet/assets", "info.json" |
-| ERC-4337 smart wallet | `references/barz.md` | "smart wallet", "account abstraction", "ERC-4337", "Barz", "UserOperation" |
+Read the reference that matches the user's task:
 
-## When to use in BrainPay OS
-
-- Adding a "Connect Wallet" flow on any page → `trust-web3-provider` + `trust-developer`
-- Deriving / signing BTC, ETH, SOL transactions client-side (instead of mocking) → `wallet-core`
-- Replacing emoji wallet icons with real token logos → `assets`
-- Building gasless / smart-account features → `barz`
-
-## Upstream
-
-Official skill pack (preferred when possible): `npx skills add trustwallet/tw-agent-skills`
-Docs: https://developer.trustwallet.com
+| Task | Reference | When to read |
+|------|-----------|--------------|
+| HD wallet, address derivation, tx signing | `references/wallet-core.md` | "wallet core", "derive address", "sign transaction", "key generation" |
+| Web3 provider, dApp connection | `references/trust-web3-provider.md` | "web3 provider", "dApp integration", "provider API" |
+| Deep links, extension, WalletConnect | `references/trust-developer.md` | "deep link", "browser extension", "WalletConnect" |
+| Token logos, metadata, CDN | `references/assets.md` | "token logo", "add asset", "trustwallet/assets" |
+| ERC-4337 smart wallet | `references/barz.md` | "smart wallet", "account abstraction", "ERC-4337", "Barz" |
