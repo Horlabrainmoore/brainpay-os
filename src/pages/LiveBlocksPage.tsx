@@ -27,7 +27,7 @@ export default function LiveBlocksPage() {
   const tip = blocks[0];
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Live Block Feed" subtitle="Bitcoin mainnet blocks (mempool.space)">
       <div className="space-y-6">
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>

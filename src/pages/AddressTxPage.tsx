@@ -82,7 +82,7 @@ export default function AddressTxPage() {
   const pageTxs = txs ? txs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : [];
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Address Tx Viewer" subtitle="Inspect any BTC address">
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Address Transaction Viewer</h1>
