@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Wallet Profit Sync",
+  "type": "object",
+  "properties": {
+    "wallet_address": { "type": "string", "description": "Bech32 or legacy address" },
+    "network": { "type": "string", "enum": ["bitcoin", "testnet", "regtest"] },
+    "asset": { "type": "string", "enum": ["BTC"] },
+    "event": { "type": "string" },
+    "source": { "type": "string" },
+    "symbol": { "type": "string" },
+    "positions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["buy", "sell"] },
+          "lot": { "type": "number" },
+          "profit_usd": { "type": "number" }
+        },
+        "required": ["type", "lot", "profit_usd"]
+      }
+    },
+    "totals": {
+      "type": "object",
+      "properties": {
+        "total_buy_lots": { "type": "number" },
+        "total_profit_usd": { "type": "number" }
+      }
+    },
+    "mempool_cluster": {
+      "type": "object",
+      "properties": {
+        "fee_rate": { "type": "string" },
+        "fee_paid": { "type": "string" },
+        "size": { "type": "string" }
+      }
+    },
+    "status": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" }
+  },
+  "required": [
+    "wallet_address", "network", "asset", "positions", "totals", "status", "timestamp"
+  ]
+}

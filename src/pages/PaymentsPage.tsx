@@ -1,28 +1,45 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { TransactionList } from "@/components/TransactionList";
-import { recentTransactions } from "@/lib/mock-data";
 import { CreditCard, ArrowRightLeft, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTransactions } from "@/hooks/useTransactions";
+import { Transaction } from "@/lib/mock-data";
 
 export default function PaymentsPage() {
   const [amount, setAmount] = useState("");
   const [route, setRoute] = useState<'card' | 'crypto'>('card');
   const [cardNumber, setCardNumber] = useState("");
   const [processing, setProcessing] = useState(false);
+  const { transactions, addTransaction } = useTransactions();
 
   const handlePayment = async () => {
-    if (!amount || Number(amount) <= 0) {
+    const amt = Number(amount);
+    if (!amount || amt <= 0) {
       toast.error("Enter a valid amount");
       return;
     }
     setProcessing(true);
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 900));
+    const fee = route === 'card' ? amt * 0.029 : amt * 0.001;
+    const { error } = await addTransaction({
+      type: 'payment',
+      asset: 'USD',
+      amount: amt,
+      usd_value: amt,
+      status: 'completed',
+      description: `Payment via ${route} (fee $${fee.toFixed(2)})`,
+      metadata: { route, fee },
+    });
     setProcessing(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
     toast.success(`Payment of $${amount} processed via ${route}`, {
       description: `Route: ${route === 'card' ? 'Card Network' : 'Blockchain'} | Fee: ${route === 'card' ? '2.9%' : '0.1%'}`
     });
@@ -32,6 +49,20 @@ export default function PaymentsPage() {
 
   const cardFee = Number(amount) * 0.029;
   const cryptoFee = Number(amount) * 0.001;
+
+  const recentPayments: Transaction[] = transactions
+    .filter((t) => t.type === 'payment')
+    .slice(0, 8)
+    .map((t) => ({
+      id: t.id,
+      type: 'payment',
+      amount: Number(t.amount),
+      currency: t.asset,
+      description: t.description ?? "Payment",
+      timestamp: t.created_at,
+      status: (["completed", "pending", "failed"].includes(t.status) ? t.status : "completed") as Transaction["status"],
+      route: (t.metadata?.route as Transaction["route"]) ?? 'card',
+    }));
 
   return (
     <DashboardLayout title="Payments" subtitle="Process and route payments">
@@ -120,7 +151,11 @@ export default function PaymentsPage() {
 
             <div className="card-gradient rounded-lg border border-border p-4">
               <h3 className="text-sm font-semibold text-foreground mb-3">Recent Payments</h3>
-              <TransactionList transactions={recentTransactions.filter(t => t.type === 'payment')} compact />
+              {recentPayments.length === 0 ? (
+                <p className="text-xs text-muted-foreground p-2">No payments yet.</p>
+              ) : (
+                <TransactionList transactions={recentPayments} compact />
+              )}
             </div>
           </div>
         </div>

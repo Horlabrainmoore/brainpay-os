@@ -2,20 +2,40 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { MetricCard } from "@/components/MetricCard";
 import { TransactionList } from "@/components/TransactionList";
 import { SignalCard } from "@/components/SignalCard";
-import { wallets, recentTransactions, tradeSignals, balanceHistory, tradingHistory, aiInsights } from "@/lib/mock-data";
+import { wallets, recentTransactions, tradeSignals, balanceHistory, tradingHistory, aiInsights, Transaction } from "@/lib/mock-data";
 import { Wallet, TrendingUp, CreditCard, Brain, ArrowUpRight, Shield } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { cn } from "@/lib/utils";
-
-const totalBalance = wallets.reduce((sum, w) => sum + w.usdValue, 0);
+import { usePrices } from "@/hooks/usePrices";
+import { useTransactions } from "@/hooks/useTransactions";
+import { useMemo } from "react";
 
 export default function Dashboard() {
+  const { prices, connected } = usePrices(["BTC", "ETH", "SOL"]);
+  const { transactions } = useTransactions();
+
+  const totalBalance = useMemo(
+    () => wallets.reduce((sum, w) => sum + w.balance * (prices[w.symbol]?.price ?? (w.usdValue / w.balance || 1)), 0),
+    [prices]
+  );
+
+  const dbTxView: Transaction[] = transactions.slice(0, 5).map((t) => ({
+    id: t.id,
+    type: (["send", "receive", "trade", "payment"].includes(t.type) ? t.type : "payment") as Transaction["type"],
+    amount: Number(t.amount),
+    currency: t.asset,
+    description: t.description ?? "",
+    timestamp: t.created_at,
+    status: (["completed", "pending", "failed"].includes(t.status) ? t.status : "completed") as Transaction["status"],
+    route: (t.metadata?.route as Transaction["route"]) ?? undefined,
+  }));
+  const txToShow = dbTxView.length > 0 ? dbTxView : recentTransactions.slice(0, 5);
   return (
     <DashboardLayout title="Dashboard" subtitle="Overview of your financial operations">
       <div className="space-y-6">
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard title="Total Balance" value={`$${totalBalance.toLocaleString()}`} change="+3.2%" changeType="positive" icon={Wallet} subtitle="24h" />
+          <MetricCard title="Total Balance" value={`$${totalBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`} change={connected ? "Live" : "Connecting…"} changeType={connected ? "positive" : "neutral"} icon={Wallet} subtitle="real-time" />
           <MetricCard title="Trading P&L" value="+$9,600" change="+12.4%" changeType="positive" icon={TrendingUp} subtitle="this month" />
           <MetricCard title="Payments Processed" value="$1,538" change="5 transactions" changeType="neutral" icon={CreditCard} subtitle="this week" />
           <MetricCard title="AI Confidence" value="87%" change="3 active signals" changeType="positive" icon={Brain} subtitle="avg" />
@@ -78,7 +98,7 @@ export default function Dashboard() {
 
           <div className="card-gradient rounded-lg border border-border p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3">Recent Transactions</h3>
-            <TransactionList transactions={recentTransactions.slice(0, 5)} compact />
+            <TransactionList transactions={txToShow} compact />
           </div>
 
           <div className="card-gradient rounded-lg border border-border p-4">
