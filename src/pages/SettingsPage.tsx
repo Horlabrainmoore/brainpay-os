@@ -257,6 +257,18 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
+            <div className="space-y-1.5 pt-2 border-t border-border">
+              <Label className="text-xs text-muted-foreground">Transaction updates webhook URL</Label>
+              <Input
+                type="url"
+                placeholder="https://webhook.finchpay.io/transaction_updates"
+                value={prefs.webhook_url}
+                onChange={(e) => setPrefs({ ...prefs, webhook_url: e.target.value })}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Optional. Transaction events will be POSTed here as JSON.
+              </p>
+            </div>
             <Button onClick={savePrefs} disabled={savingPrefs}>
               {savingPrefs ? "Saving…" : "Save preferences"}
             </Button>
