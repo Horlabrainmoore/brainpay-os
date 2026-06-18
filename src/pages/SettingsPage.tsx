@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { encryptValue } from "@/lib/crypto";
 import { toast } from "sonner";
-import { Key, Trash2, Plus, ShieldAlert } from "lucide-react";
+import { Key, Trash2, Plus, ShieldAlert, Send, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { z } from "zod";
 
 const PROVIDERS = ["binance", "coinbase", "kraken", "bybit", "okx", "other"];
@@ -59,7 +59,13 @@ export default function SettingsPage() {
     security_alerts: true,
     weekly_summary: true,
     webhook_url: "",
+    notify_trade: true,
+    notify_payment: true,
+    notify_wallet_tx: true,
   });
+  const [deliveries, setDeliveries] = useState<any[]>([]);
+  const [testing, setTesting] = useState(false);
+  const lastDelivery = deliveries[0];
   const [apiKeys, setApiKeys] = useState<ApiKeyRow[]>([]);
   const [newKey, setNewKey] = useState({
     label: "",
@@ -98,11 +104,50 @@ export default function SettingsPage() {
           security_alerts: n.security_alerts,
           weekly_summary: n.weekly_summary,
           webhook_url: (n as any).webhook_url ?? "",
+          notify_trade: (n as any).notify_trade ?? true,
+          notify_payment: (n as any).notify_payment ?? true,
+          notify_wallet_tx: (n as any).notify_wallet_tx ?? true,
         });
       }
       if (keys) setApiKeys(keys as ApiKeyRow[]);
+      await loadDeliveries();
     })();
   }, [user]);
+
+  const loadDeliveries = async () => {
+    if (!user) return;
+    const { data } = await (supabase as any)
+      .from("webhook_deliveries")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (data) setDeliveries(data);
+  };
+
+  const sendTestWebhook = async () => {
+    if (!user) return;
+    if (!prefs.webhook_url.trim()) {
+      toast.error("Save a webhook URL first");
+      return;
+    }
+    setTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("webhook-dispatch", {
+        body: {
+          event_type: "test",
+          payload: { sample: true, message: "Test webhook from BrainPay Settings" },
+        },
+      });
+      if (error) throw error;
+      if (data?.ok) toast.success(`Delivered (HTTP ${data.http_status})`);
+      else toast.error(`Failed after ${data?.attempts ?? "?"} attempts: ${data?.error ?? "unknown"}`);
+      await loadDeliveries();
+    } catch (e: any) {
+      toast.error(e.message ?? "Test failed");
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const saveProfile = async () => {
     if (!user) return;
