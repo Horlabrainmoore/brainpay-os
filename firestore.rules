@@ -1,0 +1,52 @@
+# Firestore security rules
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // telemetry and readonly collections for authenticated users
+    match /telemetry/{doc} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /telemetry/events/{doc} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /blocks/{doc} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /mempool_stats/{doc} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /alerts/{doc} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /wallet_watch/{doc} {
+      // allow users to read their own watchlist; writes are handled by functions/admin
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /audit_logs/{doc} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    // default deny
+    match /{document=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

@@ -1,0 +1,13 @@
+// functions/tsconfig.json
+{
+  "compilerOptions": {
+    "lib": ["es2020"],
+    "module": "commonjs",
+    "noImplicitReturns": true,
+    "esModuleInterop": true,
+    "outDir": "lib",
+    "sourceMap": true,
+    "target": "es2020"
+  },
+  "include": ["src"]
+}
