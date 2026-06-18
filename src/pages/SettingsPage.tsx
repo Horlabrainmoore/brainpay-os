@@ -97,6 +97,7 @@ export default function SettingsPage() {
           payment_updates: n.payment_updates,
           security_alerts: n.security_alerts,
           weekly_summary: n.weekly_summary,
+          webhook_url: (n as any).webhook_url ?? "",
         });
       }
       if (keys) setApiKeys(keys as ApiKeyRow[]);
