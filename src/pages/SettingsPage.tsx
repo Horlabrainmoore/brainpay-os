@@ -125,11 +125,22 @@ export default function SettingsPage() {
 
   const savePrefs = async () => {
     if (!user) return;
+    const url = prefs.webhook_url.trim();
+    if (url) {
+      try {
+        const u = new URL(url);
+        if (u.protocol !== "https:") throw new Error("Webhook URL must use https://");
+      } catch (e: any) {
+        toast.error(e.message ?? "Invalid webhook URL");
+        return;
+      }
+    }
     setSavingPrefs(true);
     const { error } = await supabase.from("notification_prefs").upsert({
       user_id: user.id,
       ...prefs,
-    });
+      webhook_url: url || null,
+    } as any);
     setSavingPrefs(false);
     if (error) toast.error(error.message);
     else toast.success("Preferences saved");
