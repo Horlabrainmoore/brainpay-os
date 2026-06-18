@@ -58,6 +58,7 @@ export default function SettingsPage() {
     payment_updates: true,
     security_alerts: true,
     weekly_summary: true,
+    webhook_url: "",
   });
   const [apiKeys, setApiKeys] = useState<ApiKeyRow[]>([]);
   const [newKey, setNewKey] = useState({
