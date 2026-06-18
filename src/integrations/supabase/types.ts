@@ -17,6 +17,9 @@ export type Database = {
       notification_prefs: {
         Row: {
           email_alerts: boolean
+          notify_payment: boolean
+          notify_trade: boolean
+          notify_wallet_tx: boolean
           payment_updates: boolean
           push_alerts: boolean
           security_alerts: boolean
@@ -28,6 +31,9 @@ export type Database = {
         }
         Insert: {
           email_alerts?: boolean
+          notify_payment?: boolean
+          notify_trade?: boolean
+          notify_wallet_tx?: boolean
           payment_updates?: boolean
           push_alerts?: boolean
           security_alerts?: boolean
@@ -39,6 +45,9 @@ export type Database = {
         }
         Update: {
           email_alerts?: boolean
+          notify_payment?: boolean
+          notify_trade?: boolean
+          notify_wallet_tx?: boolean
           payment_updates?: boolean
           push_alerts?: boolean
           security_alerts?: boolean
@@ -199,6 +208,54 @@ export type Database = {
           label?: string
           last_used_at?: string | null
           provider?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          attempts: number
+          created_at: string
+          error: string | null
+          event_type: string
+          http_status: number | null
+          id: string
+          last_attempt_at: string | null
+          next_retry_at: string | null
+          payload: Json
+          response_summary: string | null
+          status: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          event_type: string
+          http_status?: number | null
+          id?: string
+          last_attempt_at?: string | null
+          next_retry_at?: string | null
+          payload?: Json
+          response_summary?: string | null
+          status?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          event_type?: string
+          http_status?: number | null
+          id?: string
+          last_attempt_at?: string | null
+          next_retry_at?: string | null
+          payload?: Json
+          response_summary?: string | null
+          status?: string
+          url?: string
           user_id?: string
         }
         Relationships: []
