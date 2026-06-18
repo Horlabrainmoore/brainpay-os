@@ -58,6 +58,7 @@ export default function SettingsPage() {
     payment_updates: true,
     security_alerts: true,
     weekly_summary: true,
+    webhook_url: "",
   });
   const [apiKeys, setApiKeys] = useState<ApiKeyRow[]>([]);
   const [newKey, setNewKey] = useState({
@@ -96,6 +97,7 @@ export default function SettingsPage() {
           payment_updates: n.payment_updates,
           security_alerts: n.security_alerts,
           weekly_summary: n.weekly_summary,
+          webhook_url: (n as any).webhook_url ?? "",
         });
       }
       if (keys) setApiKeys(keys as ApiKeyRow[]);
@@ -123,11 +125,22 @@ export default function SettingsPage() {
 
   const savePrefs = async () => {
     if (!user) return;
+    const url = prefs.webhook_url.trim();
+    if (url) {
+      try {
+        const u = new URL(url);
+        if (u.protocol !== "https:") throw new Error("Webhook URL must use https://");
+      } catch (e: any) {
+        toast.error(e.message ?? "Invalid webhook URL");
+        return;
+      }
+    }
     setSavingPrefs(true);
     const { error } = await supabase.from("notification_prefs").upsert({
       user_id: user.id,
       ...prefs,
-    });
+      webhook_url: url || null,
+    } as any);
     setSavingPrefs(false);
     if (error) toast.error(error.message);
     else toast.success("Preferences saved");
@@ -254,6 +267,18 @@ export default function SettingsPage() {
                   />
                 </div>
               ))}
+            </div>
+            <div className="space-y-1.5 pt-2 border-t border-border">
+              <Label className="text-xs text-muted-foreground">Transaction updates webhook URL</Label>
+              <Input
+                type="url"
+                placeholder="https://webhook.finchpay.io/transaction_updates"
+                value={prefs.webhook_url}
+                onChange={(e) => setPrefs({ ...prefs, webhook_url: e.target.value })}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Optional. Transaction events will be POSTed here as JSON.
+              </p>
             </div>
             <Button onClick={savePrefs} disabled={savingPrefs}>
               {savingPrefs ? "Saving…" : "Save preferences"}

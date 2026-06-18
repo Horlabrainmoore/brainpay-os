@@ -23,6 +23,7 @@ export type Database = {
           trade_signals: boolean
           updated_at: string
           user_id: string
+          webhook_url: string | null
           weekly_summary: boolean
         }
         Insert: {
@@ -33,6 +34,7 @@ export type Database = {
           trade_signals?: boolean
           updated_at?: string
           user_id: string
+          webhook_url?: string | null
           weekly_summary?: boolean
         }
         Update: {
@@ -43,6 +45,7 @@ export type Database = {
           trade_signals?: boolean
           updated_at?: string
           user_id?: string
+          webhook_url?: string | null
           weekly_summary?: boolean
         }
         Relationships: []
