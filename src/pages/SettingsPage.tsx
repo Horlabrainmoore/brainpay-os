@@ -313,21 +313,100 @@ export default function SettingsPage() {
                 </div>
               ))}
             </div>
-            <div className="space-y-1.5 pt-2 border-t border-border">
-              <Label className="text-xs text-muted-foreground">Transaction updates webhook URL</Label>
-              <Input
-                type="url"
-                placeholder="https://webhook.finchpay.io/transaction_updates"
-                value={prefs.webhook_url}
-                onChange={(e) => setPrefs({ ...prefs, webhook_url: e.target.value })}
-              />
-              <p className="text-[11px] text-muted-foreground">
-                Optional. Transaction events will be POSTed here as JSON.
-              </p>
+            <div className="space-y-3 pt-2 border-t border-border">
+              <div>
+                <Label className="text-xs text-muted-foreground">Transaction updates webhook URL</Label>
+                <div className="flex gap-2 mt-1.5">
+                  <Input
+                    type="url"
+                    placeholder="https://webhook.finchpay.io/transaction_updates"
+                    value={prefs.webhook_url}
+                    onChange={(e) => setPrefs({ ...prefs, webhook_url: e.target.value })}
+                  />
+                  <Button type="button" variant="outline" onClick={sendTestWebhook} disabled={testing} className="gap-2 shrink-0">
+                    <Send className="h-4 w-4" /> {testing ? "Sending…" : "Test"}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Optional. Events POST as JSON with retry + capped backoff (up to 4 attempts).
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-foreground">Webhook event triggers</p>
+                {([
+                  ["notify_trade", "Trade updates", "New trades, fills, and closed positions"],
+                  ["notify_payment", "Payment updates", "Outgoing and incoming payment status changes"],
+                  ["notify_wallet_tx", "Wallet transaction updates", "On-chain BTC tx detected for tracked addresses"],
+                ] as const).map(([key, title, desc]) => (
+                  <div key={key} className="flex items-center justify-between p-2.5 rounded-md bg-secondary/30 border border-border">
+                    <div>
+                      <p className="text-xs font-medium text-foreground">{title}</p>
+                      <p className="text-[11px] text-muted-foreground">{desc}</p>
+                    </div>
+                    <Switch
+                      checked={prefs[key]}
+                      onCheckedChange={(v) => setPrefs({ ...prefs, [key]: v })}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {lastDelivery && (
+                <div className="rounded-md border border-border bg-secondary/20 p-3 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    {lastDelivery.status === "delivered" ? (
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                    ) : lastDelivery.status === "failed" ? (
+                      <XCircle className="h-4 w-4 text-destructive" />
+                    ) : (
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <p className="text-xs font-medium text-foreground">
+                      Last delivery · {lastDelivery.event_type} · HTTP {lastDelivery.http_status ?? "—"}
+                    </p>
+                    <span className="text-[11px] text-muted-foreground ml-auto">
+                      {new Date(lastDelivery.last_attempt_at ?? lastDelivery.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  {lastDelivery.response_summary && (
+                    <pre className="text-[11px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-24 overflow-auto">
+                      {lastDelivery.response_summary}
+                    </pre>
+                  )}
+                  {lastDelivery.error && (
+                    <p className="text-[11px] text-destructive">{lastDelivery.error}</p>
+                  )}
+                  <p className="text-[10px] text-muted-foreground">attempts: {lastDelivery.attempts}</p>
+                </div>
+              )}
             </div>
             <Button onClick={savePrefs} disabled={savingPrefs}>
               {savingPrefs ? "Saving…" : "Save preferences"}
             </Button>
+
+            {deliveries.length > 0 && (
+              <div className="mt-6 border-t border-border pt-4">
+                <h4 className="text-xs font-semibold text-foreground mb-2">Recent webhook deliveries</h4>
+                <div className="space-y-1.5 max-h-64 overflow-auto">
+                  {deliveries.map((d) => (
+                    <div key={d.id} className="flex items-center gap-2 text-[11px] p-2 rounded bg-secondary/20 border border-border/50">
+                      {d.status === "delivered" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                      ) : (
+                        <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      )}
+                      <span className="font-mono text-muted-foreground">{d.event_type}</span>
+                      <span className="text-muted-foreground">HTTP {d.http_status ?? "—"}</span>
+                      <span className="text-muted-foreground">×{d.attempts}</span>
+                      <span className="ml-auto text-muted-foreground">
+                        {new Date(d.created_at).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </TabsContent>
 
