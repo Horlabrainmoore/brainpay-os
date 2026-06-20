@@ -1,25 +1,23 @@
-# Dependency directories
-node_modules/
-.env
-.DS_Store
-
-# OS junk
-Thumbs.db
-*.swp
-
-# Logs
-logs/
-*.log
-
-# Build output
-dist/
-build/
-
+.gitignore
+# Firebase
+google-services.json
+firebase-adminsdk*.json
+# Wallet backups
+*.wallet
+*.keystore
+*.seed
+*.mnemonic
 # Secrets
-*.secret
-*.pem
-*.key
-
-# Data outputs
-/data/*.bak
-/data/*.tmp
+.env
+.env.local
+.env.production
+# Node
+node_modules/
+Dist/
+# Logs
+logs
+*.log
+npm-debug.log*
+# OS
+.DS_Store
+Thumbs.db
