@@ -11,7 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { encryptValue } from "@/lib/crypto";
 import { toast } from "sonner";
 import { Key, Trash2, Plus, ShieldAlert, Send, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { FirebaseDiagnostics } from "@/components/FirebaseDiagnostics";
 import { z } from "zod";
+
 
 const PROVIDERS = ["binance", "coinbase", "kraken", "bybit", "okx", "other"];
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "CHF", "AUD"];
@@ -254,7 +256,9 @@ export default function SettingsPage() {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>
+          <TabsTrigger value="diagnostics">Diagnostics</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="profile">
           <div className="card-gradient rounded-lg border border-border p-6 max-w-2xl space-y-4">
