@@ -1,30 +1,47 @@
-// src/lib/remoteConfig.ts
-import { initializeApp } from "firebase/app";
-import { getRemoteConfig, fetchAndActivate, getValue } from "firebase/remote-config";
+import {
+  fetchAndActivate,
+  getRemoteConfig,
+  getValue,
+  type RemoteConfig,
+} from "firebase/remote-config";
+import { firebaseApp } from "./firebase";
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
-};
-
-const app = initializeApp(firebaseConfig);
-const rc = getRemoteConfig(app);
-rc.settings.minimumFetchIntervalMillis = 60 * 1000; // 1 minute for dev; adjust in prod
-
-export async function activateRemoteConfig() {
+let rc: RemoteConfig | null = null;
+if (firebaseApp && typeof window !== "undefined") {
   try {
-    await fetchAndActivate(rc);
-  } catch (e) {
-    // ignore
+    rc = getRemoteConfig(firebaseApp);
+    rc.settings.minimumFetchIntervalMillis = 60 * 1000;
+    rc.defaultConfig = {
+      welcome_message: "Welcome to BrainPay",
+      feature_live_blocks: true,
+    };
+  } catch {
+    rc = null;
+  }
+}
+
+export const remoteConfigReady = () => Boolean(rc);
+
+export async function activateRemoteConfig(): Promise<boolean> {
+  if (!rc) return false;
+  try {
+    return await fetchAndActivate(rc);
+  } catch {
+    return false;
   }
 }
 
 export function getFlagBoolean(key: string, fallback = false) {
+  if (!rc) return fallback;
+  try { return getValue(rc, key).asBoolean(); } catch { return fallback; }
+}
+
+export function getFlagString(key: string, fallback = "") {
+  if (!rc) return fallback;
   try {
-    const val = getValue(rc, key);
-    return val.asBoolean();
-  } catch (e) {
+    const v = getValue(rc, key).asString();
+    return v || fallback;
+  } catch {
     return fallback;
   }
 }
