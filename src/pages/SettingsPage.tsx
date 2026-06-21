@@ -513,7 +513,12 @@ export default function SettingsPage() {
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="diagnostics">
+          <FirebaseDiagnostics />
+        </TabsContent>
       </Tabs>
+
     </DashboardLayout>
   );
 }
