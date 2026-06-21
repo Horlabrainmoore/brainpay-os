@@ -26,6 +26,7 @@ export type Database = {
           trade_signals: boolean
           updated_at: string
           user_id: string
+          webhook_secret: string | null
           webhook_url: string | null
           weekly_summary: boolean
         }
@@ -40,6 +41,7 @@ export type Database = {
           trade_signals?: boolean
           updated_at?: string
           user_id: string
+          webhook_secret?: string | null
           webhook_url?: string | null
           weekly_summary?: boolean
         }
@@ -54,6 +56,7 @@ export type Database = {
           trade_signals?: boolean
           updated_at?: string
           user_id?: string
+          webhook_secret?: string | null
           webhook_url?: string | null
           weekly_summary?: boolean
         }

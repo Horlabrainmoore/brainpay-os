@@ -59,10 +59,12 @@ export default function SettingsPage() {
     security_alerts: true,
     weekly_summary: true,
     webhook_url: "",
+    webhook_secret: "",
     notify_trade: true,
     notify_payment: true,
     notify_wallet_tx: true,
   });
+
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [testing, setTesting] = useState(false);
   const lastDelivery = deliveries[0];
@@ -104,10 +106,12 @@ export default function SettingsPage() {
           security_alerts: n.security_alerts,
           weekly_summary: n.weekly_summary,
           webhook_url: (n as any).webhook_url ?? "",
+          webhook_secret: (n as any).webhook_secret ?? "",
           notify_trade: (n as any).notify_trade ?? true,
           notify_payment: (n as any).notify_payment ?? true,
           notify_wallet_tx: (n as any).notify_wallet_tx ?? true,
         });
+
       }
       if (keys) setApiKeys(keys as ApiKeyRow[]);
       await loadDeliveries();
@@ -181,11 +185,19 @@ export default function SettingsPage() {
       }
     }
     setSavingPrefs(true);
+    const secret = prefs.webhook_secret.trim();
+    if (secret && secret.length < 16) {
+      toast.error("Signing secret must be at least 16 characters");
+      setSavingPrefs(false);
+      return;
+    }
     const { error } = await supabase.from("notification_prefs").upsert({
       user_id: user.id,
       ...prefs,
       webhook_url: url || null,
+      webhook_secret: secret || null,
     } as any);
+
     setSavingPrefs(false);
     if (error) toast.error(error.message);
     else toast.success("Preferences saved");
@@ -331,6 +343,22 @@ export default function SettingsPage() {
                   Optional. Events POST as JSON with retry + capped backoff (up to 4 attempts).
                 </p>
               </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground">HMAC signing secret (optional)</Label>
+                <Input
+                  type="password"
+                  placeholder="whsec_… (min 16 chars)"
+                  value={prefs.webhook_secret}
+                  onChange={(e) => setPrefs({ ...prefs, webhook_secret: e.target.value })}
+                  className="mt-1.5 font-mono text-xs"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  Requests are signed as <code className="font-mono">X-BrainPay-Signature: sha256=HMAC(secret, `${"{"}timestamp{"}"}.{"{"}body{"}"})</code>.
+                  Timestamp sent in <code className="font-mono">X-BrainPay-Timestamp</code> (unix seconds).
+                </p>
+              </div>
+
 
               <div className="space-y-2">
                 <p className="text-xs font-medium text-foreground">Webhook event triggers</p>
