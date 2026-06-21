@@ -59,11 +59,12 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     const { data: prefs } = await admin
       .from("notification_prefs")
-      .select("webhook_url, notify_trade, notify_payment, notify_wallet_tx")
+      .select("webhook_url, webhook_secret, notify_trade, notify_payment, notify_wallet_tx")
       .eq("user_id", userId)
       .maybeSingle();
 
     const url = prefs?.webhook_url;
+    const secret: string | null = (prefs as any)?.webhook_secret ?? null;
     if (!url) {
       return new Response(JSON.stringify({ error: "No webhook URL configured" }), {
         status: 400,
@@ -78,12 +79,36 @@ Deno.serve(async (req) => {
       });
     }
 
+
     const eventBody = {
       event_type: eventType,
       timestamp: new Date().toISOString(),
       user_id: userId,
       data: payload,
     };
+    const rawBody = JSON.stringify(eventBody);
+
+    // HMAC-SHA256 signature over `${timestamp}.${rawBody}` (Stripe-style)
+    const sigTimestamp = Math.floor(Date.now() / 1000).toString();
+    let signatureHex: string | null = null;
+    if (secret && secret.length > 0) {
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey(
+        "raw",
+        enc.encode(secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"],
+      );
+      const sig = await crypto.subtle.sign(
+        "HMAC",
+        key,
+        enc.encode(`${sigTimestamp}.${rawBody}`),
+      );
+      signatureHex = Array.from(new Uint8Array(sig))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
 
     const { data: deliveryRow, error: insertErr } = await admin
       .from("webhook_deliveries")
@@ -110,10 +135,20 @@ Deno.serve(async (req) => {
       try {
         const ac = new AbortController();
         const timer = setTimeout(() => ac.abort(), 10_000);
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "User-Agent": "BrainPay-Webhook/1.0",
+          "X-BrainPay-Event": eventType,
+          "X-BrainPay-Timestamp": sigTimestamp,
+        };
+        if (signatureHex) {
+          headers["X-BrainPay-Signature"] = `sha256=${signatureHex}`;
+          headers["X-BrainPay-Signature-Version"] = "v1";
+        }
         const resp = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "User-Agent": "BrainPay-Webhook/1.0" },
-          body: JSON.stringify(eventBody),
+          headers,
+          body: rawBody,
           signal: ac.signal,
         });
         clearTimeout(timer);
@@ -134,6 +169,7 @@ Deno.serve(async (req) => {
         await new Promise((r) => setTimeout(r, wait));
       }
     }
+
 
     await admin
       .from("webhook_deliveries")
