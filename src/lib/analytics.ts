@@ -1,28 +1,32 @@
-// src/lib/analytics.ts
 // Centralized telemetry helpers (web)
-import { initializeApp } from "firebase/app";
-import { getAnalytics, logEvent } from "firebase/analytics";
+import { getAnalytics, logEvent, type Analytics } from "firebase/analytics";
+import { firebaseApp, isFirebaseConfigured } from "./firebase";
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_API_KEY || "",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_APP_ID || "",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || import.meta.env.VITE_NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "",
-};
+let analytics: Analytics | null = null;
+if (firebaseApp && typeof window !== "undefined") {
+  try {
+    analytics = getAnalytics(firebaseApp);
+  } catch {
+    analytics = null;
+  }
+}
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const analyticsReady = () => Boolean(analytics);
 
 export const trackEvent = (name: string, params?: Record<string, unknown>) => {
+  if (!analytics) {
+    if (!isFirebaseConfigured) {
+      // Helpful local-dev breadcrumb when env vars are missing.
+      // eslint-disable-next-line no-console
+      console.info("[analytics:noop]", name, params);
+    }
+    return false;
+  }
   try {
-    logEvent(analytics, name, params);
-  } catch (err) {
-    // swallow: analytics should not crash the app
-    // consider sending to a backup endpoint
-    // console.warn("analytics error", err);
+    logEvent(analytics, name as string, params as Record<string, unknown>);
+    return true;
+  } catch {
+    return false;
   }
 };
 
