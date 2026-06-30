@@ -9,6 +9,7 @@ import {
   Zap,
   Boxes,
   SearchCode,
+  Copy,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -30,6 +31,7 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Wallets", url: "/wallets", icon: Wallet },
   { title: "Trading", url: "/trading", icon: TrendingUp },
+  { title: "MetaCopier", url: "/metacopier", icon: Copy },
   { title: "Payments", url: "/payments", icon: CreditCard },
   { title: "Live Blocks", url: "/blocks", icon: Boxes },
   { title: "Address Lookup", url: "/address-lookup", icon: SearchCode },
