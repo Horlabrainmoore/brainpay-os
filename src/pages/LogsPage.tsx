@@ -99,6 +99,18 @@ function ProxyLogs() {
                     </span>
                   )}
                 </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(log.correlation_id);
+                    }}
+                    title="Copy correlation ID"
+                    className="text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors bg-secondary/60 px-1.5 py-0.5 rounded border border-border"
+                  >
+                    cid: {log.correlation_id.slice(0, 8)}…{log.correlation_id.slice(-4)}
+                  </button>
+                </div>
                 {log.error && (
                   <p className="text-[11px] text-destructive font-mono break-all">{log.error}</p>
                 )}
