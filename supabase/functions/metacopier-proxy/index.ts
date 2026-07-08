@@ -49,18 +49,26 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const correlationId =
+    req.headers.get("x-correlation-id") ?? crypto.randomUUID();
   const started = Date.now();
   const userId = await getUserId(req);
+  const responseHeaders = {
+    ...corsHeaders,
+    "Content-Type": "application/json",
+    "x-correlation-id": correlationId,
+  };
 
   const apiKey = Deno.env.get("METACOPIER_API_KEY");
   if (!apiKey) {
     await logRow({
-      user_id: userId, path: "-", method: "-", status: 500, ok: false,
-      duration_ms: Date.now() - started, error: "METACOPIER_API_KEY not configured",
+      correlation_id: correlationId, user_id: userId, path: "-", method: "-",
+      status: 500, ok: false, duration_ms: Date.now() - started,
+      error: "METACOPIER_API_KEY not configured",
     });
     return new Response(
-      JSON.stringify({ error: "METACOPIER_API_KEY is not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ error: "METACOPIER_API_KEY is not configured", correlationId }),
+      { status: 500, headers: responseHeaders },
     );
   }
 
@@ -69,24 +77,26 @@ Deno.serve(async (req) => {
     payload = await req.json();
   } catch {
     await logRow({
-      user_id: userId, path: "-", method: "-", status: 400, ok: false,
-      duration_ms: Date.now() - started, error: "Invalid JSON body",
+      correlation_id: correlationId, user_id: userId, path: "-", method: "-",
+      status: 400, ok: false, duration_ms: Date.now() - started,
+      error: "Invalid JSON body",
     });
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Invalid JSON body", correlationId }),
+      { status: 400, headers: responseHeaders },
+    );
   }
 
   if (!payload?.path || typeof payload.path !== "string" || !payload.path.startsWith("/rest/")) {
     await logRow({
-      user_id: userId, path: String(payload?.path ?? "-"), method: payload?.method ?? "-",
+      correlation_id: correlationId, user_id: userId,
+      path: String(payload?.path ?? "-"), method: payload?.method ?? "-",
       status: 400, ok: false, duration_ms: Date.now() - started,
       error: "path must start with /rest/",
     });
     return new Response(
-      JSON.stringify({ error: "`path` must start with /rest/" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ error: "`path` must start with /rest/", correlationId }),
+      { status: 400, headers: responseHeaders },
     );
   }
 
@@ -103,6 +113,7 @@ Deno.serve(async (req) => {
     headers: {
       "X-API-KEY": apiKey,
       "Accept": "application/json",
+      "x-correlation-id": correlationId,
       ...(payload.body !== undefined ? { "Content-Type": "application/json" } : {}),
     },
   };
@@ -117,24 +128,24 @@ Deno.serve(async (req) => {
     try { data = JSON.parse(text); } catch { /* keep text */ }
 
     await logRow({
-      user_id: userId, path: payload.path, method, status: upstream.status,
-      ok: upstream.ok, duration_ms: Date.now() - started,
+      correlation_id: correlationId, user_id: userId, path: payload.path, method,
+      status: upstream.status, ok: upstream.ok, duration_ms: Date.now() - started,
       error: upstream.ok ? null : (typeof data === "string" ? data.slice(0, 500) : JSON.stringify(data).slice(0, 500)),
     });
 
     return new Response(
-      JSON.stringify({ status: upstream.status, ok: upstream.ok, data }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ status: upstream.status, ok: upstream.ok, data, correlationId }),
+      { status: 200, headers: responseHeaders },
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await logRow({
-      user_id: userId, path: payload.path, method, status: 502, ok: false,
-      duration_ms: Date.now() - started, error: message,
+      correlation_id: correlationId, user_id: userId, path: payload.path, method,
+      status: 502, ok: false, duration_ms: Date.now() - started, error: message,
     });
     return new Response(
-      JSON.stringify({ error: message }),
-      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ error: message, correlationId }),
+      { status: 502, headers: responseHeaders },
     );
   }
 });
