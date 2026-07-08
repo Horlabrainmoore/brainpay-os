@@ -19,6 +19,7 @@ const levelConfig = {
 
 interface ProxyLog {
   id: string;
+  correlation_id: string;
   path: string;
   method: string;
   status: number | null;
