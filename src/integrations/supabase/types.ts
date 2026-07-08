@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      metacopier_proxy_logs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          id: string
+          method: string
+          ok: boolean
+          path: string
+          status: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          method: string
+          ok?: boolean
+          path: string
+          status?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          method?: string
+          ok?: boolean
+          path?: string
+          status?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       notification_prefs: {
         Row: {
           email_alerts: boolean
