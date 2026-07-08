@@ -53,6 +53,12 @@ interface ProxyResponse<T> {
   status: number;
   ok: boolean;
   data: T;
+  correlationId?: string;
+}
+
+function newCorrelationId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `mc-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 async function call<T>(
