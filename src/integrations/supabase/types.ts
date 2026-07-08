@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       metacopier_proxy_logs: {
         Row: {
+          correlation_id: string
           created_at: string
           duration_ms: number | null
           error: string | null
@@ -27,6 +28,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          correlation_id?: string
           created_at?: string
           duration_ms?: number | null
           error?: string | null
@@ -38,6 +40,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          correlation_id?: string
           created_at?: string
           duration_ms?: number | null
           error?: string | null
