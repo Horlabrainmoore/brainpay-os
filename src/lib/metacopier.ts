@@ -65,11 +65,14 @@ async function call<T>(
   path: string,
   opts: { method?: string; query?: Record<string, string | number | undefined>; body?: unknown } = {},
 ): Promise<T> {
+  const correlationId = newCorrelationId();
   const { data, error } = await supabase.functions.invoke<ProxyResponse<T>>("metacopier-proxy", {
     body: { path, method: opts.method ?? "GET", query: opts.query, body: opts.body },
+    headers: { "x-correlation-id": correlationId },
   });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Empty response from MetaCopier proxy");
+  if (error) throw new Error(`${error.message} (correlationId=${correlationId})`);
+  if (!data) throw new Error(`Empty response from MetaCopier proxy (correlationId=${correlationId})`);
+  const cid = data.correlationId ?? correlationId;
   if (!data.ok) {
     const detail =
       typeof data.data === "string"
@@ -77,7 +80,7 @@ async function call<T>(
         : (data.data as { message?: string; error?: string } | null)?.message ??
           (data.data as { error?: string } | null)?.error ??
           JSON.stringify(data.data);
-    throw new Error(`MetaCopier API ${data.status}: ${detail}`);
+    throw new Error(`MetaCopier API ${data.status}: ${detail} (correlationId=${cid})`);
   }
   return data.data;
 }
