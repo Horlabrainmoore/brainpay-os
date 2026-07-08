@@ -28,6 +28,7 @@ async function getUserId(req: Request): Promise<string | null> {
 }
 
 async function logRow(row: {
+  correlation_id: string;
   user_id: string | null;
   path: string;
   method: string;
