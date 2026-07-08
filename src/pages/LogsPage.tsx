@@ -35,7 +35,7 @@ function ProxyLogs() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("metacopier_proxy_logs")
-        .select("id, path, method, status, ok, duration_ms, error, created_at")
+        .select("id, correlation_id, path, method, status, ok, duration_ms, error, created_at")
         .order("created_at", { ascending: false })
         .limit(200);
       if (error) throw error;
