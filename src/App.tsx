@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Analytics } from "@vercel/analytics/react";
 import Index from "./pages/Index.tsx";
 import WalletsPage from "./pages/WalletsPage.tsx";
 import TradingPage from "./pages/TradingPage.tsx";
@@ -45,6 +46,7 @@ const App = () => (
           </Routes>
         </AuthProvider>
       </BrowserRouter>
+      <Analytics />
     </TooltipProvider>
   </QueryClientProvider>
 );
