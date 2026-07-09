@@ -1,0 +1,18 @@
+{
+  "name": "@brainpay/events",
+  "version": "1.0.0",
+  "description": "EventBus and event types for BrainPay OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo 'tests pending'"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.11.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

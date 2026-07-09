@@ -1,0 +1,56 @@
+name: Deploy Automation Engine
+
+on:
+  push:
+    branches:
+      - feature/automation-engine
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd packages/events && npm ci && cd ../.. 
+          cd functions && npm ci && cd ..
+      
+      - name: Build packages
+        run: |
+          cd packages/events && npm run build && cd ../..
+          cd functions && npm run build && cd ..
+      
+      - name: Run tests
+        run: npm test --workspaces
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/feature/automation-engine'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@latest
+      
+      - name: Deploy to Firebase
+        env:
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: |
+          firebase deploy --project "$FIREBASE_PROJECT_ID" --only functions,firestore:rules
