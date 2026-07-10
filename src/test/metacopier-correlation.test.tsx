@@ -89,7 +89,9 @@ describe("MetaCopier correlation ID", () => {
 
     // Switch to the MetaCopier proxy tab
     const tab = await screen.findByRole("tab", { name: /MetaCopier proxy/i });
-    tab.click();
+    fireEvent.pointerDown(tab, { button: 0, pointerType: "mouse" });
+    fireEvent.mouseDown(tab, { button: 0 });
+    fireEvent.click(tab);
 
     await waitFor(() => {
       expect(screen.getByText(/cid:/i)).toBeInTheDocument();
