@@ -29,6 +29,55 @@ interface ProxyLog {
   created_at: string;
 }
 
+function CidChip({ cid }: { cid: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = window.setTimeout(() => setCopied(false), 1500);
+    return () => window.clearTimeout(t);
+  }, [copied]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard?.writeText(cid);
+      setCopied(true);
+    } catch {
+      // Fallback for restrictive contexts
+      const ta = document.createElement("textarea");
+      ta.value = cid;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); setCopied(true); } catch { /* noop */ }
+      document.body.removeChild(ta);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title={copied ? "Copied!" : "Copy correlation ID"}
+      aria-label={copied ? "Correlation ID copied" : "Copy correlation ID"}
+      data-testid="cid-chip"
+      data-cid={cid}
+      data-copied={copied ? "true" : "false"}
+      className={cn(
+        "inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border transition-colors",
+        copied
+          ? "border-success/50 text-success bg-success/10"
+          : "border-border text-muted-foreground hover:text-foreground bg-secondary/60",
+      )}
+    >
+      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+      <span>
+        {copied ? "Copied!" : <>cid: {cid.slice(0, 8)}…{cid.slice(-4)}</>}
+      </span>
+    </button>
+  );
+}
+
+
 function ProxyLogs() {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ["metacopier-proxy-logs"],
