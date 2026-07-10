@@ -1,10 +1,10 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { systemLogs } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { CheckCircle, Info, AlertTriangle, XCircle, Search, RefreshCw } from "lucide-react";
+import { CheckCircle, Info, AlertTriangle, XCircle, Search, RefreshCw, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
