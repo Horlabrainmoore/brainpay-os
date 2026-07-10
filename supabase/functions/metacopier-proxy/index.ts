@@ -1,4 +1,12 @@
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { corsHeaders as baseCorsHeaders } from "npm:@supabase/supabase-js@2/cors";
+
+const corsHeaders = {
+  ...baseCorsHeaders,
+  "Access-Control-Allow-Headers":
+    (baseCorsHeaders as Record<string, string>)["Access-Control-Allow-Headers"] +
+    ", x-correlation-id",
+  "Access-Control-Expose-Headers": "x-correlation-id",
+};
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const BASE = "https://api.metacopier.io";
