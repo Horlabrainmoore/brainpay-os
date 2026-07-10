@@ -1,35 +1,109 @@
 /**
- * Lightweight BTC mainnet address validator.
- * Accepts: P2PKH (1...), P2SH (3...), Bech32 P2WPKH/P2WSH (bc1q...), Taproot (bc1p...).
- * Not a full checksum verifier — pairs with a server lookup that will reject bad addresses.
+ * Bitcoin Address Validation & Utilities
  */
-const LEGACY = /^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$/;
-const BECH32 = /^bc1[qp][023456789acdefghjklmnpqrstuvwxyz]{38,87}$/;
 
-export type BtcAddressKind = "p2pkh" | "p2sh" | "bech32" | "taproot" | null;
+export interface AddressValidation {
+  valid: boolean;
+  kind?: string;
+  reason?: string;
+}
 
-export function classifyBtcAddress(addr: string): BtcAddressKind {
-  const a = addr.trim();
-  if (!a) return null;
-  if (/^1/.test(a) && LEGACY.test(a)) return "p2pkh";
-  if (/^3/.test(a) && LEGACY.test(a)) return "p2sh";
-  if (BECH32.test(a.toLowerCase())) return a.toLowerCase().startsWith("bc1p") ? "taproot" : "bech32";
+/**
+ * Validate Bitcoin address and return type
+ */
+export function validateBtcAddress(address: string): AddressValidation {
+  if (!address || typeof address !== 'string') {
+    return { valid: false, reason: 'Address is required' };
+  }
+
+  const trimmed = address.trim();
+
+  // Mainnet P2PKH (starts with 1)
+  if (/^1[1-9A-HJ-NP-Z]{25,34}$/.test(trimmed)) {
+    return { valid: true, kind: 'P2PKH' };
+  }
+
+  // Mainnet P2SH (starts with 3)
+  if (/^3[1-9A-HJ-NP-Z]{25,34}$/.test(trimmed)) {
+    return { valid: true, kind: 'P2SH' };
+  }
+
+  // Mainnet Bech32 (bc1)
+  if (/^bc1[a-z0-9]{39,59}$/.test(trimmed)) {
+    return { valid: true, kind: 'Bech32 (P2WPKH/P2WSH)' };
+  }
+
+  // Testnet P2PKH (starts with m or n)
+  if (/^[mn][1-9A-HJ-NP-Z]{25,34}$/.test(trimmed)) {
+    return { valid: true, kind: 'Testnet P2PKH' };
+  }
+
+  // Testnet P2SH (starts with 2)
+  if (/^2[1-9A-HJ-NP-Z]{25,34}$/.test(trimmed)) {
+    return { valid: true, kind: 'Testnet P2SH' };
+  }
+
+  // Testnet Bech32 (tb1)
+  if (/^tb1[a-z0-9]{39,59}$/.test(trimmed)) {
+    return { valid: true, kind: 'Testnet Bech32' };
+  }
+
+  // Signet Bech32 (tb1)
+  if (/^tb1[a-z0-9]{39,59}$/.test(trimmed)) {
+    return { valid: true, kind: 'Signet Bech32' };
+  }
+
+  return { valid: false, reason: 'Invalid Bitcoin address format' };
+}
+
+/**
+ * Check if address is on testnet
+ */
+export function isTestnetAddress(address: string): boolean {
+  return /^[mn2tb1]/.test(address);
+}
+
+/**
+ * Get network from address
+ */
+export function getNetworkFromAddress(
+  address: string
+): 'mainnet' | 'testnet' | 'signet' | null {
+  if (isTestnetAddress(address)) {
+    return 'testnet';
+  }
+  if (/^bc1/.test(address)) {
+    return 'mainnet';
+  }
+  if (/^[13]/.test(address)) {
+    return 'mainnet';
+  }
   return null;
 }
 
-export function validateBtcAddress(addr: string): { valid: boolean; reason?: string; kind: BtcAddressKind } {
-  const a = addr.trim();
-  if (!a) return { valid: false, reason: "Address is required.", kind: null };
-  if (/\s/.test(a)) return { valid: false, reason: "Address cannot contain spaces.", kind: null };
-  if (a.length < 26) return { valid: false, reason: "Address is too short.", kind: null };
-  if (a.length > 90) return { valid: false, reason: "Address is too long.", kind: null };
-  const kind = classifyBtcAddress(a);
-  if (!kind) {
-    return {
-      valid: false,
-      reason: "Not a recognized mainnet BTC address. Expected formats: 1…, 3…, bc1q…, bc1p…",
-      kind: null,
-    };
-  }
-  return { valid: true, kind };
+/**
+ * Truncate address for display
+ */
+export function truncateAddress(
+  address: string,
+  startChars: number = 8,
+  endChars: number = 6
+): string {
+  if (address.length <= startChars + endChars) return address;
+  return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 }
+
+/**
+ * Format address with checksum (if applicable)
+ */
+export function formatBtcAddress(address: string): string {
+  return address.trim().toLowerCase();
+}
+
+export default {
+  validateBtcAddress,
+  isTestnetAddress,
+  getNetworkFromAddress,
+  truncateAddress,
+  formatBtcAddress,
+};

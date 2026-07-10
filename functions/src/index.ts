@@ -1,117 +1,140 @@
-// functions/src/index.ts
-import * as admin from "firebase-admin";
-import { onSchedule } from "firebase-functions/v2/scheduler";
-import logger from "firebase-functions/logger";
-import { fetchFeeEstimates, fetchBlocksLatest, fetchAddress } from "./mempoolClient";
-import { PerformanceTrace, WalletActivity, AuditLog } from "./firestoreTypes";
+/**
+ * Firebase Cloud Functions (Gen2)
+ * Main entry point for BrainPay-OS backend
+ */
 
-admin.initializeApp();
-const db = admin.firestore();
+import { onRequest, HttpsError } from 'firebase-functions/https';
+import { onSchedule } from 'firebase-functions/scheduler';
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import * as mempoolClient from './mempoolClient';
 
-// syncLatestBlock - runs every minute
-export const syncLatestBlock = onSchedule({
-  schedule: "every 1 minutes",
-  timeZone: "UTC",
-}, async (event) => {
-  logger.log("syncLatestBlock start");
-  try {
-    const blocks = await fetchBlocksLatest();
-    if (Array.isArray(blocks) && blocks.length) {
-      const latest = blocks[0];
-      const height = latest.height;
-      const docRef = db.collection("blocks").doc(String(height));
-      await docRef.set({
-        height,
-        hash: latest.id,
-        timestamp: admin.firestore.Timestamp.fromMillis(latest.timestamp * 1000),
-        tx_count: latest.tx_count || 0,
-        raw: latest,
-      }, { merge: true });
+initializeApp();
+const db = getFirestore();
 
-      await db.collection("telemetry").doc("current").set({
-        latest_block: height,
-        latest_block_hash: latest.id,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
+/**
+ * Mempool Fee Estimator — Fetch and cache recommended fees
+ */
+export const estimateFees = onRequest(
+  { region: 'us-central1', memory: '256MB' },
+  async (req, res) => {
+    try {
+      const fees = await mempoolClient.fetchFeeEstimates();
 
-      await db.collection("audit_logs").add({
-        action: "sync_latest_block",
-        actor: "functions.syncLatestBlock",
-        metadata: { height },
-        createdAt: Date.now(),
-      } as AuditLog);
+      // Cache in Firestore for 1 minute
+      await db.collection('cache').doc('fees').set(
+        { ...fees, updated_at: new Date() },
+        { merge: true }
+      );
+
+      res.json({ success: true, data: fees });
+    } catch (error) {
+      console.error('Fee estimation failed:', error);
+      throw new HttpsError('internal', 'Failed to estimate fees');
     }
-  } catch (e) {
-    logger.error("syncLatestBlock error", e);
   }
-});
+);
 
-// syncMempoolStats - runs every 1 minute (public API rate limits apply)
-export const syncMempoolStats = onSchedule({
-  schedule: "every 1 minutes",
-  timeZone: "UTC",
-}, async (event) => {
-  logger.log("syncMempoolStats start");
-  try {
-    const fees = await fetchFeeEstimates();
-    const statsUrl = `${process.env.MEMPOOL_API_BASE || "https://mempool.space"}/api/mempool"; // not all endpoints exist; we store fees at least
-    await db.collection("mempool_stats").doc("current").set({
-      fastestFee: fees.fastestFee,
-      halfHourFee: fees.halfHourFee || null,
-      economyFee: fees.economyFee || null,
-      raw: fees,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
+/**
+ * Address Stats Fetcher — Get on-chain balance and tx count
+ */
+export const getAddressStats = onRequest(
+  { region: 'us-central1', memory: '256MB' },
+  async (req, res) => {
+    const { address } = req.query;
 
-    await db.collection("audit_logs").add({
-      action: "sync_mempool_stats",
-      actor: "functions.syncMempoolStats",
-      metadata: { fees },
-      createdAt: Date.now(),
-    } as AuditLog);
-  } catch (e) {
-    logger.error("syncMempoolStats error", e);
-  }
-});
-
-// watchWallets - iterate wallet_watch collection and check addresses
-export const watchWallets = onSchedule({
-  schedule: "every 1 minutes",
-  timeZone: "UTC",
-}, async (event) => {
-  logger.log("watchWallets start");
-  try {
-    const snap = await db.collection("wallet_watch").get();
-    for (const doc of snap.docs) {
-      const data = doc.data();
-      const address = data.address as string | undefined;
-      if (!address) continue;
-      try {
-        const addr = await fetchAddress(address);
-        const balance = addr.chain_stats?.funded_txo_sum || addr.chain_stats?.balance || addr.chain_stats?.funded_txo_sum || 0;
-        const unconfirmed = addr.mempool_stats || null;
-        // store activity
-        await db.collection("wallet_activity").add({
-          wallet: address,
-          txid: null,
-          amount: balance,
-          confirmations: addr.chain_stats?.confirmed_txo_sum || 0,
-          timestamp: Date.now(),
-        } as WalletActivity);
-
-        // detect changes / alerts (simplified)
-        // in production: compare to last known balance, create alert document if changed
-      } catch (e) {
-        logger.error(`watchWallets failed for ${address}`, e);
-      }
+    if (!address || typeof address !== 'string') {
+      throw new HttpsError('invalid-argument', 'Address parameter required');
     }
-    await db.collection("audit_logs").add({
-      action: "watch_wallets",
-      actor: "functions.watchWallets",
-      metadata: { count: snap.size },
-      createdAt: Date.now(),
-    } as AuditLog);
-  } catch (e) {
-    logger.error("watchWallets error", e);
+
+    try {
+      const stats = await mempoolClient.fetchAddress(address);
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      console.error('Address stats failed:', error);
+      throw new HttpsError('internal', 'Failed to fetch address stats');
+    }
   }
-});
+);
+
+/**
+ * Block Height Tracker — Get current Bitcoin block height
+ */
+export const getBlockHeight = onRequest(
+  { region: 'us-central1', memory: '256MB' },
+  async (req, res) => {
+    try {
+      const blocks = await mempoolClient.fetchBlocksLatest();
+      const height = blocks[0]?.height || 0;
+
+      res.json({ success: true, height });
+    } catch (error) {
+      console.error('Block height fetch failed:', error);
+      throw new HttpsError('internal', 'Failed to fetch block height');
+    }
+  }
+);
+
+/**
+ * Scheduled Task — Sync mempool fees every 10 minutes
+ */
+export const syncMempoolFees = onSchedule(
+  { schedule: 'every 10 minutes', region: 'us-central1' },
+  async (context) => {
+    try {
+      console.log('🔄 Syncing mempool fees...');
+      const fees = await mempoolClient.fetchFeeEstimates();
+
+      // Store in Firestore
+      await db.collection('telemetry').add({
+        type: 'mempool_fees',
+        fees,
+        timestamp: new Date(),
+      });
+
+      console.log('✅ Mempool fees synced:', fees);
+    } catch (error) {
+      console.error('❌ Mempool sync failed:', error);
+    }
+  }
+);
+
+/**
+ * Scheduled Task — Export telemetry to BigQuery
+ */
+export const exportToBigQuery = onSchedule(
+  { schedule: 'every day 02:00', region: 'us-central1' },
+  async (context) => {
+    try {
+      console.log('📊 Exporting telemetry to BigQuery...');
+
+      // Query Firestore
+      const snapshot = await db.collection('telemetry').where(
+        'exported',
+        '==',
+        false
+      ).limit(1000).get();
+
+      console.log(`📤 Exporting ${snapshot.size} documents...`);
+
+      // Mark as exported
+      const batch = db.batch();
+      snapshot.docs.forEach((doc) => {
+        batch.update(doc.ref, { exported: true });
+      });
+      await batch.commit();
+
+      console.log('✅ Export completed');
+    } catch (error) {
+      console.error('❌ BigQuery export failed:', error);
+    }
+  }
+);
+
+export default {
+  estimateFees,
+  getAddressStats,
+  getBlockHeight,
+  syncMempoolFees,
+  exportToBigQuery,
+};
