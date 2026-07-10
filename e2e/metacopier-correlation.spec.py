@@ -51,7 +51,7 @@ async def main():
         await page.screenshot(path=str(SHOTS / "2_logs.png"))
 
         # 3. Find cid: chips
-        chips = page.locator('button[title="Copy correlation ID"]')
+        chips = page.locator('[data-testid="cid-chip"]')
         count = await chips.count()
         print("cid chip count:", count)
         assert count > 0, "expected at least one cid: chip in the Logs UI"
@@ -79,6 +79,43 @@ async def main():
         first_chip = chip_texts[0].strip()
         print("expected:", expected_chip, "| got:", first_chip)
         assert first_chip == expected_chip, "top chip does not match latest DB correlation_id"
+
+        # 6. Copy-to-clipboard: grant permission, click chip, assert clipboard contents + success UI
+        await context.grant_permissions(["clipboard-read", "clipboard-write"], origin=BASE)
+        top_chip = chips.first
+        # Sanity: expected full cid from DB row and chip data attribute
+        chip_cid_attr = await top_chip.get_attribute("data-cid")
+        assert chip_cid_attr == latest_cid, f"data-cid mismatch: {chip_cid_attr} vs {latest_cid}"
+
+        await top_chip.click()
+
+        # Success indicator: aria-label flips, data-copied becomes true, chip shows "Copied!"
+        await page.wait_for_function(
+            "el => el.getAttribute('data-copied') === 'true'",
+            arg=await top_chip.element_handle(),
+            timeout=3000,
+        )
+        aria = await top_chip.get_attribute("aria-label")
+        title = await top_chip.get_attribute("title")
+        chip_text_after = (await top_chip.inner_text()).strip()
+        print("after-click aria:", aria, "| title:", title, "| text:", chip_text_after)
+        assert aria == "Correlation ID copied", f"unexpected aria-label after copy: {aria}"
+        assert title == "Copied!", f"unexpected title after copy: {title}"
+        assert "Copied!" in chip_text_after, f"expected success text, got {chip_text_after!r}"
+        await page.screenshot(path=str(SHOTS / "3_copied.png"))
+
+        # Clipboard payload must equal the FULL correlation_id (not the truncated chip text)
+        clip = await page.evaluate("navigator.clipboard.readText()")
+        print("clipboard:", clip)
+        assert clip == latest_cid, f"clipboard {clip!r} != correlation_id {latest_cid!r}"
+
+        # Success indicator auto-resets after ~1.5s
+        await page.wait_for_function(
+            "el => el.getAttribute('data-copied') === 'false'",
+            arg=await top_chip.element_handle(),
+            timeout=4000,
+        )
+        print("success indicator reset OK")
 
         print("PASS")
         await browser.close()
