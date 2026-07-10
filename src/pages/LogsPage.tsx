@@ -1,10 +1,10 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { systemLogs } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import { CheckCircle, Info, AlertTriangle, XCircle, Search, RefreshCw } from "lucide-react";
+import { CheckCircle, Info, AlertTriangle, XCircle, Search, RefreshCw, Copy, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +28,55 @@ interface ProxyLog {
   error: string | null;
   created_at: string;
 }
+
+function CidChip({ cid }: { cid: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = window.setTimeout(() => setCopied(false), 1500);
+    return () => window.clearTimeout(t);
+  }, [copied]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard?.writeText(cid);
+      setCopied(true);
+    } catch {
+      // Fallback for restrictive contexts
+      const ta = document.createElement("textarea");
+      ta.value = cid;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); setCopied(true); } catch { /* noop */ }
+      document.body.removeChild(ta);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title={copied ? "Copied!" : "Copy correlation ID"}
+      aria-label={copied ? "Correlation ID copied" : "Copy correlation ID"}
+      data-testid="cid-chip"
+      data-cid={cid}
+      data-copied={copied ? "true" : "false"}
+      className={cn(
+        "inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded border transition-colors",
+        copied
+          ? "border-success/50 text-success bg-success/10"
+          : "border-border text-muted-foreground hover:text-foreground bg-secondary/60",
+      )}
+    >
+      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+      <span>
+        {copied ? "Copied!" : <>cid: {cid.slice(0, 8)}…{cid.slice(-4)}</>}
+      </span>
+    </button>
+  );
+}
+
 
 function ProxyLogs() {
   const { data, isLoading, error, refetch, isFetching } = useQuery({
@@ -100,16 +149,7 @@ function ProxyLogs() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard?.writeText(log.correlation_id);
-                    }}
-                    title="Copy correlation ID"
-                    className="text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors bg-secondary/60 px-1.5 py-0.5 rounded border border-border"
-                  >
-                    cid: {log.correlation_id.slice(0, 8)}…{log.correlation_id.slice(-4)}
-                  </button>
+                  <CidChip cid={log.correlation_id} />
                 </div>
                 {log.error && (
                   <p className="text-[11px] text-destructive font-mono break-all">{log.error}</p>
