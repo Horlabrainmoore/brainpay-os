@@ -53,6 +53,90 @@ export type Database = {
         }
         Relationships: []
       }
+      moonpay_events: {
+        Row: {
+          amount: number | null
+          base_amount: number | null
+          base_currency_code: string | null
+          created_at: string
+          currency_code: string | null
+          event_type: string
+          id: string
+          raw: Json | null
+          status: string | null
+          transaction_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          base_amount?: number | null
+          base_currency_code?: string | null
+          created_at?: string
+          currency_code?: string | null
+          event_type: string
+          id?: string
+          raw?: Json | null
+          status?: string | null
+          transaction_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          base_amount?: number | null
+          base_currency_code?: string | null
+          created_at?: string
+          currency_code?: string | null
+          event_type?: string
+          id?: string
+          raw?: Json | null
+          status?: string | null
+          transaction_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      moonpay_settings: {
+        Row: {
+          api_key: string | null
+          created_at: string
+          currency_code: string | null
+          default_currency_code: string | null
+          environment: string
+          show_only_currencies: string | null
+          skip_unsupported_region_screen: boolean
+          unsupported_region_redirect_url: string | null
+          updated_at: string
+          user_id: string
+          wallet_address: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string
+          currency_code?: string | null
+          default_currency_code?: string | null
+          environment?: string
+          show_only_currencies?: string | null
+          skip_unsupported_region_screen?: boolean
+          unsupported_region_redirect_url?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_address?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string
+          currency_code?: string | null
+          default_currency_code?: string | null
+          environment?: string
+          show_only_currencies?: string | null
+          skip_unsupported_region_screen?: boolean
+          unsupported_region_redirect_url?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       notification_prefs: {
         Row: {
           email_alerts: boolean
