@@ -10,6 +10,7 @@ import {
   Boxes,
   SearchCode,
   Copy,
+  Coins,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -32,6 +33,7 @@ const mainItems = [
   { title: "Wallets", url: "/wallets", icon: Wallet },
   { title: "Trading", url: "/trading", icon: TrendingUp },
   { title: "MetaCopier", url: "/metacopier", icon: Copy },
+  { title: "MoonPay", url: "/moonpay", icon: Coins },
   { title: "Payments", url: "/payments", icon: CreditCard },
   { title: "Live Blocks", url: "/blocks", icon: Boxes },
   { title: "Address Lookup", url: "/address-lookup", icon: SearchCode },
