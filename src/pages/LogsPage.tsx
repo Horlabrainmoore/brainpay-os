@@ -237,10 +237,100 @@ export default function LogsPage() {
         <TabsList>
           <TabsTrigger value="system">System</TabsTrigger>
           <TabsTrigger value="metacopier">MetaCopier proxy</TabsTrigger>
+          <TabsTrigger value="moonpay">MoonPay events</TabsTrigger>
         </TabsList>
         <TabsContent value="system"><SystemLogs /></TabsContent>
         <TabsContent value="metacopier"><ProxyLogs /></TabsContent>
+        <TabsContent value="moonpay"><MoonPayLogs /></TabsContent>
       </Tabs>
     </DashboardLayout>
   );
 }
+
+function MoonPayLogs() {
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
+    queryKey: ["moonpay-events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("moonpay_events")
+        .select("id, event_type, status, transaction_id, currency_code, amount, base_currency_code, base_amount, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return data as Array<{
+        id: string; event_type: string; status: string | null; transaction_id: string | null;
+        currency_code: string | null; amount: number | null; base_currency_code: string | null;
+        base_amount: number | null; created_at: string;
+      }>;
+    },
+    refetchInterval: 10000,
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          Most recent 200 MoonPay widget events. Auto-refreshes every 10s.
+        </p>
+        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching}>
+          <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isFetching && "animate-spin")} />
+          Refresh
+        </Button>
+      </div>
+      <div className="card-gradient rounded-lg border border-border divide-y divide-border">
+        {isLoading && <div className="p-8 text-center text-sm text-muted-foreground">Loading…</div>}
+        {error && <div className="p-8 text-center text-sm text-destructive">{(error as Error).message}</div>}
+        {!isLoading && !error && data?.length === 0 && (
+          <div className="p-8 text-center text-sm text-muted-foreground">
+            No MoonPay events recorded yet. Open the MoonPay page to trigger events.
+          </div>
+        )}
+        {data?.map((ev) => {
+          const isErr = ev.event_type.includes("failed") || ev.status === "failed";
+          const isOk = ev.event_type.includes("succeeded") || ev.status === "completed";
+          const Icon = isErr ? XCircle : isOk ? CheckCircle : Info;
+          const color = isErr ? "text-destructive" : isOk ? "text-success" : "text-info";
+          const bg = isErr ? "bg-destructive/10" : isOk ? "bg-success/10" : "bg-info/10";
+          return (
+            <div key={ev.id} className="flex items-start gap-3 p-4 hover:bg-secondary/30 transition-colors">
+              <div className={cn("h-7 w-7 rounded-md flex items-center justify-center shrink-0 mt-0.5", bg)}>
+                <Icon className={cn("h-3.5 w-3.5", color)} />
+              </div>
+              <div className="flex-1 min-w-0 space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-border font-mono">
+                    {ev.event_type}
+                  </Badge>
+                  {ev.status && (
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-border font-mono">
+                      {ev.status}
+                    </Badge>
+                  )}
+                  {ev.amount != null && ev.currency_code && (
+                    <span className="text-xs font-mono text-foreground">
+                      {ev.amount} {ev.currency_code.toUpperCase()}
+                    </span>
+                  )}
+                  {ev.base_amount != null && ev.base_currency_code && (
+                    <span className="text-[11px] font-mono text-muted-foreground">
+                      ({ev.base_amount} {ev.base_currency_code.toUpperCase()})
+                    </span>
+                  )}
+                </div>
+                {ev.transaction_id && (
+                  <p className="text-[11px] text-muted-foreground font-mono break-all">tx: {ev.transaction_id}</p>
+                )}
+              </div>
+              <span className="text-[10px] text-muted-foreground font-mono shrink-0 whitespace-nowrap">
+                {new Date(ev.created_at).toLocaleString([], {
+                  month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit',
+                })}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
