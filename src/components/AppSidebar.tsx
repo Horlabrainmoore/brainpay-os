@@ -31,6 +31,7 @@ import {
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Wallets", url: "/wallets", icon: Wallet },
+  { title: "Wallet UTXOs", url: "/wallets/utxos", icon: Coins },
   { title: "Trading", url: "/trading", icon: TrendingUp },
   { title: "MetaCopier", url: "/metacopier", icon: Copy },
   { title: "MoonPay", url: "/moonpay", icon: Coins },
