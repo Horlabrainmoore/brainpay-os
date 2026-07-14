@@ -211,13 +211,27 @@ export default function MoonPayPage() {
               <Input value={s.show_only_currencies} onChange={(e) => set("show_only_currencies", e.target.value)} placeholder="eth,usdc,btc" />
             </Field>
             <Field label="unsupportedRegionRedirectUrl">
-              <Input value={s.unsupported_region_redirect_url} onChange={(e) => set("unsupported_region_redirect_url", e.target.value)} placeholder="https://your.app/unsupported" />
+              <Input
+                value={s.unsupported_region_redirect_url}
+                onChange={(e) => set("unsupported_region_redirect_url", e.target.value)}
+                placeholder={`${window.location.origin}/moonpay/unsupported (default)`}
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Leave blank to use the built-in <span className="font-mono">/moonpay/unsupported</span> page.
+              </p>
             </Field>
             <Field label="skipUnsupportedRegionScreen">
-              <Switch
-                checked={s.skip_unsupported_region_screen}
-                onCheckedChange={(v) => set("skip_unsupported_region_screen", v)}
-              />
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={s.skip_unsupported_region_screen}
+                  onCheckedChange={(v) => set("skip_unsupported_region_screen", v)}
+                />
+                <span className="text-[10px] text-muted-foreground">
+                  {s.skip_unsupported_region_screen
+                    ? "Skip MoonPay's screen — redirect immediately"
+                    : "Show MoonPay's default unsupported-region screen"}
+                </span>
+              </div>
             </Field>
             <div className="flex gap-2 pt-2">
               <Button size="sm" variant="outline" onClick={save} disabled={!loaded}>Save</Button>
