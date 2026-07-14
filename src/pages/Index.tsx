@@ -8,6 +8,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, 
 import { cn } from "@/lib/utils";
 import { usePrices } from "@/hooks/usePrices";
 import { useTransactions } from "@/hooks/useTransactions";
+import { MempoolFeeCharts } from "@/components/MempoolFeeCharts";
 import { useMemo } from "react";
 
 export default function Dashboard() {
