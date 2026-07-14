@@ -9,6 +9,7 @@ export interface Transaction {
   timestamp: string;
   status: 'completed' | 'pending' | 'failed';
   route?: 'card' | 'crypto';
+  txid?: string;
 }
 
 export interface Wallet {
