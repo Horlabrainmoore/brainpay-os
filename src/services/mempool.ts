@@ -118,8 +118,8 @@ export async function getAddressTransactions(
 ): Promise<TransactionData[]> {
   try {
     const { bitcoin } = initMempoolClient();
-    const txs = await bitcoin.addresses.getAddressTxs({ address, from_index: fromIndex, to_index: toIndex });
-    return txs as TransactionData[];
+    const txs = await bitcoin.addresses.getAddressTxs({ address });
+    return (txs as unknown as TransactionData[]).slice(fromIndex, toIndex);
   } catch (error) {
     throw new Error(`Failed to fetch address transactions: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -131,7 +131,7 @@ export async function getAddressTransactions(
 export async function getAddressUtxos(address: string) {
   try {
     const { bitcoin } = initMempoolClient();
-    const utxos = await bitcoin.addresses.getAddressUtxo({ address });
+    const utxos = await bitcoin.addresses.getAddressTxsUtxo({ address });
     return utxos;
   } catch (error) {
     throw new Error(`Failed to fetch address UTXOs: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -149,7 +149,7 @@ export async function getFeeEstimates(): Promise<FeeEstimate> {
       fastestFee: fees.fastestFee,
       halfHourFee: fees.halfHourFee,
       hourFee: fees.hourFee,
-      economyFee: fees.economyFee,
+      economyFee: (fees as any).economyFee ?? fees.minimumFee,
       minimumFee: fees.minimumFee,
     };
   } catch (error) {
@@ -185,7 +185,7 @@ export async function getBlock(hashOrHeight: string | number): Promise<BlockStat
       size: block.size,
       weight: block.weight,
       difficulty: block.difficulty,
-      feeRange: block.fee_range || [0, 0, 0, 0, 0],
+      feeRange: (block as any).fee_range || (block as any).extras?.feeRange || [0, 0, 0, 0, 0],
     };
   } catch (error) {
     throw new Error(`Failed to fetch block: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -224,7 +224,11 @@ export async function getTransaction(txid: string): Promise<TransactionData> {
 export async function getMempoolStats(): Promise<MempoolStats> {
   try {
     const { bitcoin } = initMempoolClient();
-    const mempool = await bitcoin.mempool.getMempool();
+    const mempool = (await bitcoin.mempool.getMempool()) as unknown as {
+      vsize: number;
+      count: number;
+      total_fee_sat: number;
+    };
     return {
       vsize: mempool.vsize,
       mempool_count: mempool.count,
@@ -243,7 +247,7 @@ export async function getMempoolRecentTxs(count: number = 10): Promise<Transacti
   try {
     const { bitcoin } = initMempoolClient();
     const txs = await bitcoin.mempool.getMempoolRecent();
-    return (txs as TransactionData[]).slice(0, count);
+    return (txs as unknown as TransactionData[]).slice(0, count);
   } catch (error) {
     throw new Error(`Failed to fetch mempool transactions: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
