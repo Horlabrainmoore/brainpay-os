@@ -39,6 +39,7 @@ export function TransactionList({ transactions, compact = false }: TransactionLi
                       {tx.route}
                     </Badge>
                   )}
+                  {tx.txid && <TxChainStatus txid={tx.txid} />}
                 </div>
               )}
             </div>
