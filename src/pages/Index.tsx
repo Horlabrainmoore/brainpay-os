@@ -66,7 +66,11 @@ export default function Dashboard() {
                 <Area type="monotone" dataKey="value" stroke="hsl(160, 84%, 39%)" strokeWidth={2} fill="url(#balGradient)" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
+        </div>
+
+        {/* Mempool fee & fee-range charts */}
+        <MempoolFeeCharts />
+
 
           <div className="card-gradient rounded-lg border border-border p-4">
             <div className="flex items-center justify-between mb-4">

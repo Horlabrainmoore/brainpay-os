@@ -2,6 +2,7 @@ import { Transaction } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, ArrowDownLeft, TrendingUp, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TxChainStatus } from "@/components/TxChainStatus";
 
 const typeConfig = {
   send: { icon: ArrowUpRight, label: 'Sent', color: 'text-destructive' },
