@@ -78,7 +78,9 @@ Deno.serve(async (req) => {
     if (showOnlyCurrencies) params.set("showOnlyCurrencies", showOnlyCurrencies);
     if (walletAddress) params.set("walletAddress", walletAddress);
     if (unsupportedRegionRedirectUrl) params.set("unsupportedRegionRedirectUrl", unsupportedRegionRedirectUrl);
-    if (skipUnsupportedRegionScreen) params.set("skipUnsupportedRegionScreen", "true");
+    if (typeof skipUnsupportedRegionScreen === "boolean") {
+      params.set("skipUnsupportedRegionScreen", skipUnsupportedRegionScreen ? "true" : "false");
+    }
     if (redirectURL) params.set("redirectURL", redirectURL);
 
     const query = "?" + params.toString();

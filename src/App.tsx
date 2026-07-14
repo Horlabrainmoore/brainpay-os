@@ -17,6 +17,7 @@ import LiveBlocksPage from "./pages/LiveBlocksPage.tsx";
 import AddressTxPage from "./pages/AddressTxPage.tsx";
 import MetaCopierPage from "./pages/MetaCopierPage.tsx";
 import MoonPayPage from "./pages/MoonPayPage.tsx";
+import MoonPayUnsupportedPage from "./pages/MoonPayUnsupportedPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/address-lookup" element={protect(<AddressTxPage />)} />
             <Route path="/metacopier" element={protect(<MetaCopierPage />)} />
             <Route path="/moonpay" element={protect(<MoonPayPage />)} />
+            <Route path="/moonpay/unsupported" element={protect(<MoonPayUnsupportedPage />)} />
             <Route path="/settings" element={protect(<SettingsPage />)} />
             <Route path="*" element={<NotFound />} />
           </Routes>
