@@ -29,6 +29,7 @@ export default function Dashboard() {
     timestamp: t.created_at,
     status: (["completed", "pending", "failed"].includes(t.status) ? t.status : "completed") as Transaction["status"],
     route: (t.metadata?.route as Transaction["route"]) ?? undefined,
+    txid: (t.metadata?.txid as string) ?? undefined,
   }));
   const txToShow = dbTxView.length > 0 ? dbTxView : recentTransactions.slice(0, 5);
   return (
