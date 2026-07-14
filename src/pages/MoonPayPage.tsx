@@ -119,6 +119,7 @@ export default function MoonPayPage() {
     }
     setSigning(true);
     try {
+      const fallbackRedirect = `${window.location.origin}/moonpay/unsupported`;
       const { data, error } = await supabase.functions.invoke("moonpay-sign", {
         body: {
           apiKey: s.api_key,
@@ -127,7 +128,7 @@ export default function MoonPayPage() {
           defaultCurrencyCode: s.default_currency_code || undefined,
           showOnlyCurrencies: s.show_only_currencies || undefined,
           walletAddress: s.wallet_address || undefined,
-          unsupportedRegionRedirectUrl: s.unsupported_region_redirect_url || undefined,
+          unsupportedRegionRedirectUrl: s.unsupported_region_redirect_url || fallbackRedirect,
           skipUnsupportedRegionScreen: s.skip_unsupported_region_screen,
           redirectURL: `${window.location.origin}/moonpay?status=complete`,
         },
@@ -135,7 +136,11 @@ export default function MoonPayPage() {
       if (error) throw error;
       if (!data?.url) throw new Error("Signing service returned no URL");
       setWidgetUrl(data.url);
-      logEvent("widget_loaded", { environment: s.environment });
+      logEvent("widget_loaded", {
+        environment: s.environment,
+        unsupportedRegionRedirectUrl: s.unsupported_region_redirect_url || fallbackRedirect,
+        skipUnsupportedRegionScreen: s.skip_unsupported_region_screen,
+      });
     } catch (e: any) {
       toast.error(e.message ?? "Failed to sign widget URL");
     } finally {
