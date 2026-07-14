@@ -38,6 +38,7 @@ export default function WalletsPage() {
     timestamp: t.created_at,
     status: (["completed", "pending", "failed"].includes(t.status) ? t.status : "completed") as Transaction["status"],
     route: (t.metadata?.route as Transaction["route"]) ?? undefined,
+    txid: (t.metadata?.txid as string) ?? undefined,
   }));
 
   return (

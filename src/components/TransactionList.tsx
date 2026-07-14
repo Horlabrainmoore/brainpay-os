@@ -2,6 +2,7 @@ import { Transaction } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { ArrowUpRight, ArrowDownLeft, TrendingUp, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { TxChainStatus } from "@/components/TxChainStatus";
 
 const typeConfig = {
   send: { icon: ArrowUpRight, label: 'Sent', color: 'text-destructive' },
@@ -38,6 +39,7 @@ export function TransactionList({ transactions, compact = false }: TransactionLi
                       {tx.route}
                     </Badge>
                   )}
+                  {tx.txid && <TxChainStatus txid={tx.txid} />}
                 </div>
               )}
             </div>

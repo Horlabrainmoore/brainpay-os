@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import WalletsPage from "./pages/WalletsPage.tsx";
+import WalletUtxosPage from "./pages/WalletUtxosPage.tsx";
 import TradingPage from "./pages/TradingPage.tsx";
 import PaymentsPage from "./pages/PaymentsPage.tsx";
 import AIInsightsPage from "./pages/AIInsightsPage.tsx";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/" element={protect(<Index />)} />
             <Route path="/wallets" element={protect(<WalletsPage />)} />
+            <Route path="/wallets/utxos" element={protect(<WalletUtxosPage />)} />
             <Route path="/trading" element={protect(<TradingPage />)} />
             <Route path="/payments" element={protect(<PaymentsPage />)} />
             <Route path="/ai-insights" element={protect(<AIInsightsPage />)} />

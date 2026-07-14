@@ -8,6 +8,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, 
 import { cn } from "@/lib/utils";
 import { usePrices } from "@/hooks/usePrices";
 import { useTransactions } from "@/hooks/useTransactions";
+import { MempoolFeeCharts } from "@/components/MempoolFeeCharts";
 import { useMemo } from "react";
 
 export default function Dashboard() {
@@ -28,6 +29,7 @@ export default function Dashboard() {
     timestamp: t.created_at,
     status: (["completed", "pending", "failed"].includes(t.status) ? t.status : "completed") as Transaction["status"],
     route: (t.metadata?.route as Transaction["route"]) ?? undefined,
+    txid: (t.metadata?.txid as string) ?? undefined,
   }));
   const txToShow = dbTxView.length > 0 ? dbTxView : recentTransactions.slice(0, 5);
   return (
@@ -65,7 +67,11 @@ export default function Dashboard() {
                 <Area type="monotone" dataKey="value" stroke="hsl(160, 84%, 39%)" strokeWidth={2} fill="url(#balGradient)" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
+        </div>
+
+        {/* Mempool fee & fee-range charts */}
+        <MempoolFeeCharts />
+
 
           <div className="card-gradient rounded-lg border border-border p-4">
             <div className="flex items-center justify-between mb-4">
