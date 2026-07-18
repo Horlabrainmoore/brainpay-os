@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { Zap, Mail, Lock, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";

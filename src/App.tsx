@@ -19,6 +19,7 @@ import AddressTxPage from "./pages/AddressTxPage.tsx";
 import MetaCopierPage from "./pages/MetaCopierPage.tsx";
 import MoonPayPage from "./pages/MoonPayPage.tsx";
 import MoonPayUnsupportedPage from "./pages/MoonPayUnsupportedPage.tsx";
+import OAuthConsent from "./pages/OAuthConsent.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route path="/" element={protect(<Index />)} />
             <Route path="/wallets" element={protect(<WalletsPage />)} />
             <Route path="/wallets/utxos" element={protect(<WalletUtxosPage />)} />
