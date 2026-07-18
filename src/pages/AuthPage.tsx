@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { Zap, Mail, Lock, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,17 +20,21 @@ const signUpSchema = signInSchema.extend({
 export default function AuthPage() {
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [busy, setBusy] = useState(false);
+
+  const rawNext = searchParams.get("next");
+  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
   const [signInData, setSignInData] = useState({ email: "", password: "" });
   const [signUpData, setSignUpData] = useState({ email: "", password: "", displayName: "" });
 
   useEffect(() => {
-    if (!loading && user) navigate("/", { replace: true });
-  }, [user, loading, navigate]);
+    if (!loading && user) navigate(next, { replace: true });
+  }, [user, loading, navigate, next]);
 
   if (loading) return null;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to={next} replace />;
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +49,7 @@ export default function AuthPage() {
     if (error) toast.error(error);
     else {
       toast.success("Welcome back");
-      navigate("/", { replace: true });
+      navigate(next, { replace: true });
     }
   };
 
@@ -62,7 +66,7 @@ export default function AuthPage() {
     if (error) toast.error(error);
     else {
       toast.success("Account created");
-      navigate("/", { replace: true });
+      navigate(next, { replace: true });
     }
   };
 
