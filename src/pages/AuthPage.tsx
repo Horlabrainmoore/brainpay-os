@@ -49,7 +49,7 @@ export default function AuthPage() {
     if (error) toast.error(error);
     else {
       toast.success("Welcome back");
-      navigate("/", { replace: true });
+      navigate(next, { replace: true });
     }
   };
 
@@ -66,7 +66,7 @@ export default function AuthPage() {
     if (error) toast.error(error);
     else {
       toast.success("Account created");
-      navigate("/", { replace: true });
+      navigate(next, { replace: true });
     }
   };
 
