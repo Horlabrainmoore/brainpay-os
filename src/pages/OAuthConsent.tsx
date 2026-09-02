@@ -58,6 +58,19 @@ export default function OAuthConsent() {
       const { data, error } = approve
         ? await oauth.approveAuthorization(authorizationId)
         : await oauth.denyAuthorization(authorizationId);
+      // Record the decision so the Agent integrations page can list clients.
+      try {
+        await supabase.from("oauth_client_consents").insert({
+          user_id: user?.id,
+          client_id: details?.client?.id ?? details?.client?.client_id ?? null,
+          client_name: details?.client?.name ?? details?.client?.client_name ?? null,
+          scopes: Array.isArray(details?.scopes) ? details.scopes.join(" ") : (details?.scopes ?? null),
+          redirect_uri: details?.client?.redirect_uri ?? null,
+          approved: approve,
+        });
+      } catch (e) {
+        console.warn("consent record failed", e);
+      }
       if (error) {
         setBusy(false);
         setError(error.message ?? String(error));
