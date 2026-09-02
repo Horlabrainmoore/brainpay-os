@@ -64,7 +64,7 @@ export default function OAuthConsent() {
           user_id: user?.id,
           client_id: details?.client?.id ?? details?.client?.client_id ?? null,
           client_name: details?.client?.name ?? details?.client?.client_name ?? null,
-          scopes: details?.scopes ?? null,
+          scopes: Array.isArray(details?.scopes) ? details.scopes.join(" ") : (details?.scopes ?? null),
           redirect_uri: details?.client?.redirect_uri ?? null,
           approved: approve,
         });
