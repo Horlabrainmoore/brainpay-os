@@ -185,6 +185,39 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_client_consents: {
+        Row: {
+          approved: boolean
+          client_id: string | null
+          client_name: string | null
+          created_at: string
+          id: string
+          redirect_uri: string | null
+          scopes: string | null
+          user_id: string
+        }
+        Insert: {
+          approved?: boolean
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          redirect_uri?: string | null
+          scopes?: string | null
+          user_id: string
+        }
+        Update: {
+          approved?: boolean
+          client_id?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          redirect_uri?: string | null
+          scopes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
