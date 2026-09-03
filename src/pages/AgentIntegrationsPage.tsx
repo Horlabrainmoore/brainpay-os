@@ -122,10 +122,10 @@ export default function AgentIntegrationsPage() {
                 )}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px]">
-                {manifest.mcp.server.title} · v{manifest.mcp.server.version}
+                {MCP_SERVER.title} · v{MCP_SERVER.version}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px]">
-                <ShieldCheck className="h-3 w-3 mr-1" /> OAuth 2.1 · aud {manifest.auth.accepted_audiences.join(", ")}
+                <ShieldCheck className="h-3 w-3 mr-1" /> OAuth 2.1 · aud {MCP_AUDIENCES.join(", ")}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">{statusDetail}</p>
