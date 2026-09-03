@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import manifest from "../../.lovable/mcp/manifest.json";
+import { MCP_AUDIENCES, MCP_PATH, MCP_SERVER, MCP_TOOLS } from "@/lib/mcp/manifest-info";
 import { Bot, Check, Copy, Loader2, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 
 interface ConsentRow {
