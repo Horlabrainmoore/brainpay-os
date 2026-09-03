@@ -11,6 +11,8 @@ import {
   SearchCode,
   Copy,
   Coins,
+  Bot,
+  CandlestickChart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -35,6 +37,7 @@ const mainItems = [
   { title: "Trading", url: "/trading", icon: TrendingUp },
   { title: "MetaCopier", url: "/metacopier", icon: Copy },
   { title: "MoonPay", url: "/moonpay", icon: Coins },
+  { title: "Exchange", url: "/exchange", icon: CandlestickChart },
   { title: "Payments", url: "/payments", icon: CreditCard },
   { title: "Live Blocks", url: "/blocks", icon: Boxes },
   { title: "Address Lookup", url: "/address-lookup", icon: SearchCode },
@@ -42,6 +45,7 @@ const mainItems = [
 
 const insightItems = [
   { title: "AI Insights", url: "/ai-insights", icon: Brain },
+  { title: "Agent Integrations", url: "/agent-integrations", icon: Bot },
   { title: "System Logs", url: "/logs", icon: FileText },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
