@@ -20,6 +20,8 @@ import MetaCopierPage from "./pages/MetaCopierPage.tsx";
 import MoonPayPage from "./pages/MoonPayPage.tsx";
 import MoonPayUnsupportedPage from "./pages/MoonPayUnsupportedPage.tsx";
 import OAuthConsent from "./pages/OAuthConsent.tsx";
+import AgentIntegrationsPage from "./pages/AgentIntegrationsPage.tsx";
+import ExchangePage from "./pages/ExchangePage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -49,6 +51,8 @@ const App = () => (
             <Route path="/moonpay" element={protect(<MoonPayPage />)} />
             <Route path="/moonpay/unsupported" element={protect(<MoonPayUnsupportedPage />)} />
             <Route path="/settings" element={protect(<SettingsPage />)} />
+            <Route path="/agent-integrations" element={protect(<AgentIntegrationsPage />)} />
+            <Route path="/exchange" element={protect(<ExchangePage />)} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

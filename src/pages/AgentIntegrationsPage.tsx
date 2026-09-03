@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import manifest from "../../.lovable/mcp/manifest.json";
+import { MCP_AUDIENCES, MCP_PATH, MCP_SERVER, MCP_TOOLS } from "@/lib/mcp/manifest-info";
 import { Bot, Check, Copy, Loader2, RefreshCw, ShieldCheck, Trash2 } from "lucide-react";
 
 interface ConsentRow {
@@ -19,7 +19,8 @@ interface ConsentRow {
   created_at: string;
 }
 
-const MCP_URL = `${window.location.origin}${manifest.path}`;
+const MCP_URL = `${window.location.origin}${MCP_PATH}`;
+const tools = MCP_TOOLS;
 
 export default function AgentIntegrationsPage() {
   const { user } = useAuth();
@@ -28,8 +29,6 @@ export default function AgentIntegrationsPage() {
   const [consents, setConsents] = useState<ConsentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-
-  const tools = useMemo(() => manifest.mcp?.tools ?? [], []);
 
   async function checkStatus() {
     setStatus("checking");
@@ -123,10 +122,10 @@ export default function AgentIntegrationsPage() {
                 )}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px]">
-                {manifest.mcp.server.title} · v{manifest.mcp.server.version}
+                {MCP_SERVER.title} · v{MCP_SERVER.version}
               </Badge>
               <Badge variant="outline" className="font-mono text-[10px]">
-                <ShieldCheck className="h-3 w-3 mr-1" /> OAuth 2.1 · aud {manifest.auth.accepted_audiences.join(", ")}
+                <ShieldCheck className="h-3 w-3 mr-1" /> OAuth 2.1 · aud {MCP_AUDIENCES.join(", ")}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">{statusDetail}</p>
