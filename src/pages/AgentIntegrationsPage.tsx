@@ -19,7 +19,8 @@ interface ConsentRow {
   created_at: string;
 }
 
-const MCP_URL = `${window.location.origin}${manifest.path}`;
+const MCP_URL = `${window.location.origin}${MCP_PATH}`;
+const tools = MCP_TOOLS;
 
 export default function AgentIntegrationsPage() {
   const { user } = useAuth();
@@ -28,8 +29,6 @@ export default function AgentIntegrationsPage() {
   const [consents, setConsents] = useState<ConsentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-
-  const tools = useMemo(() => manifest.mcp?.tools ?? [], []);
 
   async function checkStatus() {
     setStatus("checking");
