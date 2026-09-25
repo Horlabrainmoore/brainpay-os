@@ -154,10 +154,10 @@ export default function AgentIntegrationsPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-medium text-foreground">{t.title ?? t.name}</span>
                   <code className="text-[10px] font-mono text-muted-foreground">{t.name}</code>
-                  {t.annotations?.readOnlyHint && (
+                  {t.readOnly && (
                     <Badge variant="outline" className="text-[10px]">read-only</Badge>
                   )}
-                  {t.annotations?.openWorldHint && (
+                  {t.openWorld && (
                     <Badge variant="outline" className="text-[10px]">external</Badge>
                   )}
                 </div>

@@ -31,8 +31,9 @@ import { Activity, RefreshCw } from "lucide-react";
 
 function err(e: unknown) {
   if (e instanceof ExchangeError) {
+    const details = (e.details ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
     toast.error(`${e.message}${e.status ? ` (HTTP ${e.status})` : ""}`, {
-      description: e.details?.slice(0, 300),
+      description: details || undefined,
     });
   } else {
     toast.error(e instanceof Error ? e.message : String(e));
