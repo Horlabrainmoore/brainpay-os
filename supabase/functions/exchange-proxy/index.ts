@@ -108,8 +108,18 @@ Deno.serve(async (req) => {
 
     if (!res.ok) {
       console.error(`exchange ${method} ${path} failed [${res.status}]: ${text}`);
-      // 429/418 are rate limits — surface them so the client backs off.
-      return json({ error: "Exchange request failed", status: res.status, details: text, durationMs }, res.status);
+      const looksLikeHtml = /<\s*html/i.test(text);
+      const hint = res.status === 404
+        ? `No route for ${method} ${path} on the configured EXCHANGE_BASE_URL — check that it hosts the /openapi/... REST API.`
+        : res.status === 429 || res.status === 418
+          ? "Exchange rate limit hit — back off before retrying."
+          : undefined;
+      return json({
+        error: hint ?? "Exchange request failed",
+        status: res.status,
+        details: looksLikeHtml ? text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300) : text.slice(0, 500),
+        durationMs,
+      }, res.status);
     }
 
     let data: unknown = text;
