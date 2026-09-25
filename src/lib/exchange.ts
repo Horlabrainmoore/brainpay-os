@@ -29,14 +29,28 @@ export class ExchangeError extends Error {
 export async function exchangeCall<T>(req: ProxyRequest): Promise<T> {
   const { data, error } = await supabase.functions.invoke("exchange-proxy", { body: req });
   if (error) {
+    let message = "Exchange request failed";
     let details = error.message;
     const ctx = (error as unknown as { context?: Response }).context;
     if (ctx && typeof ctx.text === "function") {
       try {
-        details = await ctx.text();
-      } catch { /* keep message */ }
+        const raw = await ctx.text();
+        details = raw;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed?.error) message = parsed.error;
+          if (parsed?.details) details = parsed.details;
+          if (parsed?.status) {
+            throw new ExchangeError(message, parsed.status, details);
+          }
+        } catch (parseErr) {
+          if (parseErr instanceof ExchangeError) throw parseErr;
+        }
+      } catch (readErr) {
+        if (readErr instanceof ExchangeError) throw readErr;
+      }
     }
-    throw new ExchangeError("Exchange request failed", undefined, details);
+    throw new ExchangeError(message, undefined, details);
   }
   if (data?.error) throw new ExchangeError(data.error, data.status, data.details);
   return data.data as T;
