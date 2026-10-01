@@ -109,17 +109,22 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       console.error(`exchange ${method} ${path} failed [${res.status}]: ${text}`);
       const looksLikeHtml = /<\s*html/i.test(text);
-      const hint = res.status === 404
+      const geoBlocked = res.status === 403 && /block access from your country|cloudfront/i.test(text);
+      const hint = geoBlocked
+        ? "The exchange blocks requests from our server's region (geo-restriction). Use a regional API host for your exchange or contact the exchange to allowlist access."
+        : res.status === 404
         ? `No route for ${method} ${path} on the configured EXCHANGE_BASE_URL — check that it hosts the /openapi/... REST API.`
         : res.status === 429 || res.status === 418
           ? "Exchange rate limit hit — back off before retrying."
           : undefined;
+      // Return 200 with an error payload so the client shows a friendly message
+      // instead of an unhandled edge-function error.
       return json({
         error: hint ?? "Exchange request failed",
         status: res.status,
         details: looksLikeHtml ? text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300) : text.slice(0, 500),
         durationMs,
-      }, res.status);
+      }, 200);
     }
 
     let data: unknown = text;
