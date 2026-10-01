@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      exchange_settings: {
+        Row: {
+          base_url: string
+          last_test_at: string | null
+          last_test_ok: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          base_url: string
+          last_test_at?: string | null
+          last_test_ok?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          base_url?: string
+          last_test_at?: string | null
+          last_test_ok?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       metacopier_proxy_logs: {
         Row: {
           correlation_id: string
