@@ -57,22 +57,45 @@ function json(body: unknown, status = 200) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  if (!BASE) {
-    return json({ error: "EXCHANGE_BASE_URL is not configured" }, 500);
-  }
-
   // Require an app session — the proxy holds shared exchange credentials.
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
   const { data: userData } = await admin.auth.getUser(authHeader.slice(7));
   if (!userData.user) return json({ error: "Unauthorized" }, 401);
 
-  let body: Body;
+  let body: Body & { testBaseUrl?: string };
   try {
     body = await req.json();
   } catch {
     return json({ error: "Invalid JSON body" }, 400);
   }
+
+  // Connectivity test against a candidate base URL: public GET /openapi/v1/time only, no keys sent.
+  if (typeof body.testBaseUrl === "string") {
+    let u: URL;
+    try { u = new URL(body.testBaseUrl.trim()); } catch { return json({ error: "Invalid URL" }); }
+    if (u.protocol !== "https:" || /^(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(u.hostname)) {
+      return json({ error: "URL must be a public https:// address" });
+    }
+    const t0 = Date.now();
+    try {
+      const r = await fetch(`${u.origin}${u.pathname.replace(/\/$/, "")}/openapi/v1/time`, { signal: AbortSignal.timeout(8000) });
+      const txt = (await r.text()).slice(0, 300);
+      let serverTime: number | undefined;
+      try { serverTime = JSON.parse(txt)?.serverTime; } catch { /* not json */ }
+      const ok = r.ok && typeof serverTime === "number";
+      const geo = r.status === 403 && /country|cloudfront/i.test(txt);
+      return json({ data: { ok, status: r.status, latencyMs: Date.now() - t0, serverTime,
+        message: ok ? "Connected" : geo ? "Blocked by the exchange in our server's region" : r.status === 404 ? "This address doesn't host the /openapi API" : `Unexpected response (HTTP ${r.status})`,
+        details: ok ? undefined : txt.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() } });
+    } catch (e) {
+      return json({ data: { ok: false, latencyMs: Date.now() - t0, message: "Could not reach this address", details: e instanceof Error ? e.message : String(e) } });
+    }
+  }
+
+  const { data: setting } = await admin.from("exchange_settings").select("base_url").eq("user_id", userData.user.id).maybeSingle();
+  const base = ((setting?.base_url as string | undefined) ?? BASE).replace(/\/$/, "");
+  if (!base) return json({ error: "No exchange API address configured — set one in Exchange settings." });
 
   const path = typeof body.path === "string" ? body.path : "";
   if (!path.startsWith("/openapi/")) {
