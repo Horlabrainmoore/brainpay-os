@@ -27,7 +27,8 @@ import {
   type RecentTrade,
   type Ticker24h,
 } from "@/lib/exchange";
-import { Activity, RefreshCw } from "lucide-react";
+import { Activity, RefreshCw, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function err(e: unknown) {
   if (e instanceof ExchangeError) {
@@ -120,9 +121,14 @@ export default function ExchangePage() {
             <CardTitle className="flex items-center gap-2 text-base">
               <Activity className="h-4 w-4 text-primary" /> Connection
             </CardTitle>
+            <div className="flex gap-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/exchange/settings"><Settings className="h-3.5 w-3.5 mr-1.5" /> Settings</Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={loadMeta}>
               <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Ping
             </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap gap-2">

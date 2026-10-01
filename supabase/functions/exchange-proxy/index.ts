@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
     query = `${query}&signature=${signature}`;
   }
 
-  const url = `${BASE}${path}${query ? `?${query}` : ""}`;
+  const url = `${base}${path}${query ? `?${query}` : ""}`;
   const headers: Record<string, string> = {};
   if (body.signed || body.apiKeyOnly) {
     if (!API_KEY) return json({ error: "EXCHANGE_API_KEY is not configured" }, 500);
