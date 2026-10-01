@@ -22,6 +22,7 @@ import MoonPayUnsupportedPage from "./pages/MoonPayUnsupportedPage.tsx";
 import OAuthConsent from "./pages/OAuthConsent.tsx";
 import AgentIntegrationsPage from "./pages/AgentIntegrationsPage.tsx";
 import ExchangePage from "./pages/ExchangePage.tsx";
+import BuyCryptoPage from "./pages/BuyCryptoPage";
 import ExchangeSettingsPage from "./pages/ExchangeSettingsPage";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/settings" element={protect(<SettingsPage />)} />
             <Route path="/agent-integrations" element={protect(<AgentIntegrationsPage />)} />
             <Route path="/exchange" element={protect(<ExchangePage />)} />
+            <Route path="/buy" element={protect(<BuyCryptoPage />)} />
             <Route path="/exchange/settings" element={protect(<ExchangeSettingsPage />)} />
             <Route path="*" element={<NotFound />} />
           </Routes>
