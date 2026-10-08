@@ -60,7 +60,7 @@ export function validateBtcAddress(address: string): AddressValidation {
  * Check if address is on testnet
  */
 export function isTestnetAddress(address: string): boolean {
-  return /^[mn2tb1]/.test(address);
+  return /^(?:[mn2]|tb1)/.test(address);
 }
 
 /**

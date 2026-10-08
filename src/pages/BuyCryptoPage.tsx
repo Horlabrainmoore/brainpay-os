@@ -6,20 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { ExternalLink, Loader2 } from "lucide-react";
-
-const COINS = ["BTC", "ETH", "USDC", "SOL", "LTC"];
-const METHODS = [
-  { id: "creditCard", label: "Credit card" },
-  { id: "applePay", label: "Apple Pay" },
-  { id: "googlePay", label: "Google Pay" },
-  { id: "iDeal", label: "iDEAL" },
-  { id: "bancontact", label: "Bancontact" },
-  { id: "sofort", label: "Sofort" },
-];
+import { validateBtcAddress, isTestnetAddress } from "@/lib/btc-address";
 
 const schema = z.object({
   amount: z.number().min(10, "Minimum €10").max(100000),
@@ -28,27 +19,36 @@ const schema = z.object({
 
 export default function BuyCryptoPage() {
   const [params] = useSearchParams();
-  const [coin, setCoin] = useState("BTC");
-  const [method, setMethod] = useState("creditCard");
   const [amount, setAmount] = useState("50");
   const [wallet, setWallet] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function buy() {
     const v = schema.safeParse({ amount: Number(amount), wallet });
-    if (!v.success) return toast.error(v.error.errors[0].message);
+    if (!v.success) return toast.error(v.error.issues[0]?.message ?? "Check your purchase details");
+    const addressCheck = validateBtcAddress(v.data.wallet);
+    if (!addressCheck.valid || isTestnetAddress(v.data.wallet)) {
+      return toast.error("Enter a valid Bitcoin mainnet address");
+    }
     setBusy(true);
     try {
       const { data, error } = await supabase.functions.invoke("btcdirect-checkout", {
         body: {
-          baseCurrency: coin, quoteCurrency: "EUR", paymentMethod: method,
+          baseCurrency: "BTC", quoteCurrency: "EUR", paymentMethod: "creditCard",
           quoteCurrencyAmount: v.data.amount, walletAddress: v.data.wallet,
           returnUrl: `${window.location.origin}/buy?status=returned`,
         },
       });
-      if (error) throw error;
+      if (error) {
+        const details = error instanceof FunctionsHttpError ? await error.context.text() : error.message;
+        throw new Error(details);
+      }
       if (data?.error) throw new Error(data.details ? `${data.error}: ${data.details}` : data.error);
-      window.location.href = data.data.checkoutUrl;
+      const checkout = new URL(data.data.checkoutUrl);
+      if (checkout.protocol !== "https:" || !checkout.hostname.endsWith(".btcdirect.eu")) {
+        throw new Error("BTC Direct returned an unexpected checkout address. No redirect was made.");
+      }
+      window.location.assign(checkout.href);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
       setBusy(false);
@@ -69,29 +69,17 @@ export default function BuyCryptoPage() {
             <CardDescription>You'll finish payment and verification on BTC Direct's secure page.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Coin</Label>
-                <Select value={coin} onValueChange={setCoin}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{COINS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="amt">Amount (EUR)</Label>
                 <Input id="amt" type="number" min={10} value={amount} onChange={(e) => setAmount(e.target.value)} />
-              </div>
             </div>
             <div className="space-y-2">
-              <Label>Payment method</Label>
-              <Select value={method} onValueChange={setMethod}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{METHODS.map((m) => <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>)}</SelectContent>
-              </Select>
+              <Label>Coin and payment method</Label>
+              <p className="text-sm text-foreground">Bitcoin (BTC) · Credit card</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wallet">Your {coin} wallet address</Label>
-              <Input id="wallet" className="font-mono" placeholder={coin === "BTC" ? "bc1…" : "0x…"} value={wallet} onChange={(e) => setWallet(e.target.value)} />
+              <Label htmlFor="wallet">Your Bitcoin wallet address</Label>
+              <Input id="wallet" className="font-mono" placeholder="bc1…" maxLength={128} value={wallet} onChange={(e) => setWallet(e.target.value)} />
               <p className="text-xs text-muted-foreground">Real (mainnet) address only. Coins are sent here.</p>
             </div>
             <Button className="w-full" onClick={buy} disabled={busy}>

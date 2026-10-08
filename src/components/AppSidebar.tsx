@@ -13,6 +13,7 @@ import {
   Coins,
   Bot,
   CandlestickChart,
+  ShoppingCart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -38,6 +39,7 @@ const mainItems = [
   { title: "MetaCopier", url: "/metacopier", icon: Copy },
   { title: "MoonPay", url: "/moonpay", icon: Coins },
   { title: "Exchange", url: "/exchange", icon: CandlestickChart },
+  { title: "Buy Crypto", url: "/buy", icon: ShoppingCart },
   { title: "Payments", url: "/payments", icon: CreditCard },
   { title: "Live Blocks", url: "/blocks", icon: Boxes },
   { title: "Address Lookup", url: "/address-lookup", icon: SearchCode },
