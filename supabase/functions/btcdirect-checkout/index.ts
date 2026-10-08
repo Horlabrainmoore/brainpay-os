@@ -4,7 +4,7 @@ import { z } from "npm:zod@3";
 
 // BTC Direct fiat-to-coin checkout (live). Authenticates server-side with partner
 // credentials and creates a hosted checkout session.
-const API = (Deno.env.get("BTCDIRECT_BASE_URL") ?? "https://api.btcdirect.eu").replace(/\/$/, "");
+const API = (Deno.env.get("BTCDIRECT_BASE_URL") ?? "").replace(/\/$/, "");
 const USER = Deno.env.get("BTCDIRECT_USERNAME") ?? "";
 const PASS = Deno.env.get("BTCDIRECT_PASSWORD") ?? "";
 
@@ -13,12 +13,11 @@ const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE
 });
 
 const Body = z.object({
-  baseCurrency: z.string().regex(/^[A-Z0-9]{2,10}$/),
+  baseCurrency: z.literal("BTC"),
   quoteCurrency: z.literal("EUR"),
   paymentMethod: z.string().regex(/^[A-Za-z0-9_-]{2,40}$/),
   quoteCurrencyAmount: z.number().positive().max(100000),
-  walletAddress: z.string().trim().min(10).max(128),
-  returnUrl: z.string().url().max(500),
+  walletAddress: z.string().trim().regex(/^(bc1[a-z0-9]{39,59}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, "A Bitcoin mainnet address is required"),
 });
 
 let cached: { token: string; exp: number } | null = null;
@@ -45,18 +44,23 @@ Deno.serve(async (req) => {
   if (!auth?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
   const { data: u } = await admin.auth.getUser(auth.slice(7));
   if (!u.user) return json({ error: "Unauthorized" }, 401);
-  if (!USER || !PASS) return json({ error: "BTC Direct credentials are not configured yet." });
+  if (!API || !USER || !PASS) return json({ error: "BTC Direct live access is not configured yet. Add the live API address and partner credentials first." });
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return json({ error: "Invalid order details", details: JSON.stringify(parsed.error.flatten().fieldErrors) });
   const order = parsed.data;
+  const apiUrl = new URL(API);
+  if (apiUrl.protocol !== "https:" || !apiUrl.hostname.endsWith(".btcdirect.eu")) {
+    return json({ error: "The configured BTC Direct live API address is invalid." });
+  }
+  const returnUrl = "https://brainpay-os.lovable.app/buy?status=returned";
   const partnerOrderIdentifier = crypto.randomUUID();
 
   try {
     const r = await fetch(`${API}/api/v2/buy/checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${await token()}` },
-      body: JSON.stringify({ ...order, partnerOrderIdentifier }),
+      body: JSON.stringify({ ...order, returnUrl, partnerOrderIdentifier }),
     });
     const text = await r.text();
     if (r.status === 401) cached = null;
@@ -65,13 +69,18 @@ Deno.serve(async (req) => {
       return json({ error: `BTC Direct rejected the order (HTTP ${r.status})`, details: text.slice(0, 400) });
     }
     const data = JSON.parse(text);
+    let checkoutUrl: URL;
+    try { checkoutUrl = new URL(data.checkoutUrl); } catch { return json({ error: "BTC Direct returned an invalid checkout address." }); }
+    if (checkoutUrl.protocol !== "https:" || !checkoutUrl.hostname.endsWith(".btcdirect.eu")) {
+      return json({ error: "BTC Direct returned an unexpected checkout address." });
+    }
     await admin.from("transactions").insert({
       user_id: u.user.id, type: "buy", asset: order.baseCurrency, amount: 0,
       usd_value: 0, status: "pending",
       description: `BTC Direct buy €${order.quoteCurrencyAmount} of ${order.baseCurrency} (${order.paymentMethod})`,
       metadata: { provider: "btcdirect", partnerOrderIdentifier, quoteCurrencyAmount: order.quoteCurrencyAmount, walletAddress: order.walletAddress },
     });
-    return json({ data: { checkoutUrl: data.checkoutUrl, partnerOrderIdentifier } });
+    return json({ data: { checkoutUrl: checkoutUrl.href, partnerOrderIdentifier } });
   } catch (e) {
     const m = e instanceof Error ? e.message : String(e);
     console.error("btcdirect error", m);
