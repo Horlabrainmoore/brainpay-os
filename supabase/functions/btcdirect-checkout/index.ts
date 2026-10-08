@@ -79,12 +79,13 @@ Deno.serve(async (req) => {
     if (checkoutUrl.protocol !== "https:" || !checkoutUrl.hostname.endsWith(".btcdirect.eu")) {
       return json({ error: "BTC Direct returned an unexpected checkout address." });
     }
-    await admin.from("transactions").insert({
+    const { error: transactionError } = await admin.from("transactions").insert({
       user_id: u.user.id, type: "buy", asset: order.baseCurrency, amount: 0,
       usd_value: 0, status: "pending",
       description: `BTC Direct buy €${order.quoteCurrencyAmount} of ${order.baseCurrency} (${order.paymentMethod})`,
       metadata: { provider: "btcdirect", partnerOrderIdentifier, quoteCurrencyAmount: order.quoteCurrencyAmount, walletAddress: order.walletAddress },
     });
+    if (transactionError) throw new Error("Checkout was created but could not be recorded in your transaction history. Please contact support before retrying.");
     return json({ data: { checkoutUrl: checkoutUrl.href, partnerOrderIdentifier } });
   } catch (e) {
     const m = e instanceof Error ? e.message : String(e);

@@ -7,4 +7,5 @@
 - [x] Exchange page (/exchange): market data, order book, balances, orders, fills
 - [x] EXCHANGE_BASE_URL / EXCHANGE_API_KEY / EXCHANGE_SECRET_KEY configured
 - [ ] Verify live market data + account endpoints with real exchange (needs valid credentials)
-- [ ] BTC Direct live purchase flow: secure credential setup, checkout function, UI, and validation
+- [x] BTC Direct Buy page, protected checkout handler, and mainnet address validation
+- [ ] BTC Direct live checkout credentials and end-to-end purchase verification (waiting for sandbox/live choice and partner credentials)
