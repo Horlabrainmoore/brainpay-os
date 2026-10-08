@@ -18,6 +18,7 @@ const Body = z.object({
   paymentMethod: z.string().regex(/^[A-Za-z0-9_-]{2,40}$/),
   quoteCurrencyAmount: z.number().positive().max(100000),
   walletAddress: z.string().trim().regex(/^(bc1[a-z0-9]{39,59}|[13][1-9A-HJ-NP-Za-km-z]{25,34})$/, "A Bitcoin mainnet address is required"),
+  returnUrl: z.string().url().max(500),
 });
 
 let cached: { token: string; exp: number } | null = null;
@@ -53,14 +54,18 @@ Deno.serve(async (req) => {
   if (apiUrl.protocol !== "https:" || !apiUrl.hostname.endsWith(".btcdirect.eu")) {
     return json({ error: "The configured BTC Direct live API address is invalid." });
   }
-  const returnUrl = "https://brainpay-os.lovable.app/buy?status=returned";
+  const returnUrl = new URL(order.returnUrl);
+  const allowedReturnHosts = new Set(["brainpay-os.lovable.app", "id-preview--a235ec03-0f1c-41ca-ae58-7e66f78d23ea.lovable.app"]);
+  if (returnUrl.protocol !== "https:" || !allowedReturnHosts.has(returnUrl.hostname) || returnUrl.pathname !== "/buy") {
+    return json({ error: "The return address must point back to the BrainPay Buy page." }, 400);
+  }
   const partnerOrderIdentifier = crypto.randomUUID();
 
   try {
     const r = await fetch(`${API}/api/v2/buy/checkout`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${await token()}` },
-      body: JSON.stringify({ ...order, returnUrl, partnerOrderIdentifier }),
+      body: JSON.stringify({ ...order, returnUrl: returnUrl.href, partnerOrderIdentifier }),
     });
     const text = await r.text();
     if (r.status === 401) cached = null;
