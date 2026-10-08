@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { ExternalLink, Loader2 } from "lucide-react";
 import { validateBtcAddress, isTestnetAddress } from "@/lib/btc-address";
 
@@ -38,7 +39,10 @@ export default function BuyCryptoPage() {
           returnUrl: `${window.location.origin}/buy?status=returned`,
         },
       });
-      if (error) throw error;
+      if (error) {
+        const details = error instanceof FunctionsHttpError ? await error.context.text() : error.message;
+        throw new Error(details);
+      }
       if (data?.error) throw new Error(data.details ? `${data.error}: ${data.details}` : data.error);
       const checkout = new URL(data.data.checkoutUrl);
       if (checkout.protocol !== "https:" || !checkout.hostname.endsWith(".btcdirect.eu")) {
