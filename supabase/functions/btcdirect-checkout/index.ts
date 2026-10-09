@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
   if (!USER || !PASS) return json({ error: "BTC Direct sandbox credentials are not configured yet." }, 503);
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return json({ error: "Invalid order details", details: JSON.stringify(parsed.error.flatten().fieldErrors) });
+  if (!parsed.success) return json({ error: "Invalid order details", details: JSON.stringify(parsed.error.flatten().fieldErrors) }, 400);
   const order = parsed.data;
   const apiUrl = new URL(API);
   if (apiUrl.protocol !== "https:" || !apiUrl.hostname.endsWith(".btcdirect.eu")) {
