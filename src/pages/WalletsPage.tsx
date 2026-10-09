@@ -10,8 +10,11 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useMemo } from "react";
 import { TransactionList } from "@/components/TransactionList";
 import { Transaction } from "@/lib/mock-data";
+import { WalletConnectionPanel } from "@/components/WalletConnection";
+import { useTrustModal } from "@trustwallet/connect-react";
 
 export default function WalletsPage() {
+  const { open } = useTrustModal();
   const { prices, connected } = usePrices(["BTC", "ETH", "SOL"]);
   const { stats, feeEstimate } = useMempoolBtc();
   const { transactions } = useTransactions();
@@ -44,6 +47,7 @@ export default function WalletsPage() {
   return (
     <DashboardLayout title="Wallets" subtitle="Manage your crypto and fiat wallets">
       <div className="space-y-6">
+        <WalletConnectionPanel />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold text-foreground">Your Wallets</h3>
@@ -54,8 +58,8 @@ export default function WalletsPage() {
               {connected ? "Live prices" : "Connecting…"}
             </span>
           </div>
-          <Button size="sm" className="gap-2">
-            <Plus className="h-3.5 w-3.5" /> Add Wallet
+          <Button size="sm" className="gap-2" onClick={() => open({ type: "namespace", namespaceId: "bip122" })}>
+            <Plus className="h-3.5 w-3.5" /> Connect wallet
           </Button>
         </div>
 

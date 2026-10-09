@@ -83,7 +83,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="card-gradient rounded-xl border border-border p-6">
+        <div className="card-gradient rounded-lg border border-border p-6 shadow-sm">
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid grid-cols-2 w-full mb-5">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -93,12 +93,12 @@ export default function AuthPage() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-3">
                 <Field icon={Mail}>
-                  <Input type="email" placeholder="you@example.com" autoComplete="email"
+                  <Input aria-label="Email" type="email" placeholder="you@example.com" autoComplete="email"
                     value={signInData.email}
                     onChange={(e) => setSignInData({ ...signInData, email: e.target.value })} />
                 </Field>
                 <Field icon={Lock}>
-                  <Input type="password" placeholder="Password" autoComplete="current-password"
+                  <Input aria-label="Password" type="password" placeholder="Password" autoComplete="current-password"
                     value={signInData.password}
                     onChange={(e) => setSignInData({ ...signInData, password: e.target.value })} />
                 </Field>

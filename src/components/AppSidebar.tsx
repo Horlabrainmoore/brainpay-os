@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -53,11 +54,13 @@ const insightItems = [
 ];
 
 export function AppSidebar() {
+  const { user } = useAuth();
+  const name = user?.user_metadata?.display_name || user?.email?.split("@")[0] || "Account";
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const isActive = (path: string) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+    path === "/" ? location.pathname === "/" : location.pathname === path || (path === "/exchange" && location.pathname === "/exchange/settings");
 
   return (
     <Sidebar collapsible="icon">
@@ -69,7 +72,7 @@ export function AppSidebar() {
           {!collapsed && (
             <div>
               <h1 className="text-sm font-bold tracking-tight text-foreground">BrainPay OS</h1>
-              <p className="text-[10px] text-muted-foreground font-mono">v1.0.0-mvp</p>
+              <p className="text-[10px] text-muted-foreground font-mono">FINANCIAL WORKSPACE</p>
             </div>
           )}
         </div>
@@ -118,11 +121,11 @@ export function AppSidebar() {
         {!collapsed && (
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold text-foreground">
-              JD
+              {name.slice(0, 2).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium truncate text-foreground">John Doe</p>
-              <p className="text-[10px] text-muted-foreground truncate">john@brainpay.io</p>
+              <p className="text-xs font-medium truncate text-foreground">{name}</p>
+              <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
             </div>
             <Settings className="h-4 w-4 text-muted-foreground" />
           </div>
