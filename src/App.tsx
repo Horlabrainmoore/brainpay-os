@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { WalletConnectionProvider } from "@/components/WalletConnection";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import WalletsPage from "./pages/WalletsPage.tsx";
@@ -32,6 +33,7 @@ const protect = (el: React.ReactNode) => <ProtectedRoute>{el}</ProtectedRoute>;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <WalletConnectionProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -62,6 +64,7 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </WalletConnectionProvider>
   </QueryClientProvider>
 );
 

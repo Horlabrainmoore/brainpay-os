@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Inbox, Search, Bitcoin } from "lucide-react";
 import { getAddressUtxos, getBlockHeight, validateBitcoinAddress } from "@/services/mempool";
+import { useSearchParams } from "react-router-dom";
 
 interface UtxoRow {
   txid: string;
@@ -20,8 +21,11 @@ interface UtxoRow {
 const DEMO = "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq";
 
 export default function WalletUtxosPage() {
-  const [input, setInput] = useState(DEMO);
-  const [address, setAddress] = useState<string | null>(DEMO);
+  const [params] = useSearchParams();
+  const requested = params.get("address");
+  const initialAddress = requested && validateBitcoinAddress(requested).valid ? requested : DEMO;
+  const [input, setInput] = useState(initialAddress);
+  const [address, setAddress] = useState<string | null>(initialAddress);
   const [utxos, setUtxos] = useState<UtxoRow[] | null>(null);
   const [tipHeight, setTipHeight] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);

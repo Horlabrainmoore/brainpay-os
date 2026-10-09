@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
+import { WalletConnectionButton } from "@/components/WalletConnection";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -36,29 +37,18 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center justify-between border-b border-border px-4 shrink-0 glass">
+          <header className="min-h-16 flex items-center justify-between gap-3 border-b border-border px-4 md:px-6 py-3 shrink-0 bg-card">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
-              <div>
-                <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-                {subtitle && <p className="text-[11px] text-muted-foreground">{subtitle}</p>}
-              </div>
+              <span className="text-xs text-muted-foreground">Workspace / <span className="text-foreground">{title}</span></span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary text-xs font-mono">
-                <span className="h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
-                <span className="text-muted-foreground">System</span>
-                <span className="text-primary">Online</span>
-              </div>
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-4 w-4 text-muted-foreground" />
-                <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary" />
-              </Button>
+              <WalletConnectionButton />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-xs font-semibold text-foreground hover:bg-secondary/70 transition-colors">
+                  <Button variant="secondary" size="icon" aria-label="Account menu" className="h-8 w-8 rounded-full text-xs">
                     {initials}
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="text-xs">
@@ -74,8 +64,14 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">
-            {children}
+          <main className="flex-1 min-w-0 p-4 md:p-8">
+            <div className="mx-auto w-full max-w-[1440px]">
+              <div className="mb-7 border-b border-border pb-5">
+                <h2 className="text-xl font-semibold text-foreground break-words">{title}</h2>
+                {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
+              </div>
+              {children}
+            </div>
           </main>
         </div>
       </div>
