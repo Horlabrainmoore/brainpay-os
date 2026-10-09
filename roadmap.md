@@ -8,4 +8,4 @@
 - [x] EXCHANGE_BASE_URL / EXCHANGE_API_KEY / EXCHANGE_SECRET_KEY configured
 - [ ] Verify live market data + account endpoints with real exchange (needs valid credentials)
 - [x] BTC Direct Buy page, protected checkout handler, and mainnet address validation
-- [ ] BTC Direct sandbox credentials and end-to-end purchase verification (waiting for partner credentials)
+- [ ] BTC Direct sandbox checkout verification (requires a user-provided Bitcoin mainnet address to create a test checkout)
