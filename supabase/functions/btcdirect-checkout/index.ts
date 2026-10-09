@@ -2,11 +2,11 @@ import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3";
 
-// BTC Direct fiat-to-coin checkout (live). Authenticates server-side with partner
+// BTC Direct fiat-to-coin checkout (sandbox). Authenticates server-side with partner
 // credentials and creates a hosted checkout session.
-const API = (Deno.env.get("BTCDIRECT_BASE_URL") ?? "").replace(/\/$/, "");
-const USER = Deno.env.get("BTCDIRECT_USERNAME") ?? "";
-const PASS = Deno.env.get("BTCDIRECT_PASSWORD") ?? "";
+const API = "https://api-sandbox.btcdirect.eu";
+const USER = Deno.env.get("BTCDIRECT_SANDBOX_USERNAME") ?? "";
+const PASS = Deno.env.get("BTCDIRECT_SANDBOX_PASSWORD") ?? "";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
   if (!auth?.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
   const { data: u } = await admin.auth.getUser(auth.slice(7));
   if (!u.user) return json({ error: "Unauthorized" }, 401);
-  if (!API || !USER || !PASS) return json({ error: "BTC Direct live access is not configured yet. Add the live API address and partner credentials first." });
+  if (!USER || !PASS) return json({ error: "BTC Direct sandbox credentials are not configured yet." }, 503);
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return json({ error: "Invalid order details", details: JSON.stringify(parsed.error.flatten().fieldErrors) });
