@@ -50,7 +50,7 @@ export function WalletConnectionProvider({ children }: { children: React.ReactNo
 export function WalletConnectionButton() {
   const open = useWalletDialog();
   const { isConnected, address, isConnecting } = useConnection({ namespaceId: "bip122" });
-  return <Button size="sm" variant="outline" onClick={open} disabled={isConnecting}>
+  return <Button size="sm" variant="outline" aria-label={isConnected ? "Manage connected wallet" : "Connect wallet"} onClick={open} disabled={isConnecting}>
     <Wallet /> <span className="hidden sm:inline">{isConnecting ? "Connecting…" : isConnected ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Connect wallet"}</span>
     <span className="sr-only sm:hidden">Connect wallet</span>
   </Button>;
