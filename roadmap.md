@@ -1,5 +1,6 @@
 # Roadmap
 
+- [ ] Fix uninitialized WalletConnect crash and verify mobile-browser wallet dialog
 - [x] Standardize Cloud White workspace, typography, navigation, and shared page controls
 - [x] Add TrustConnect Bitcoin wallet connection and verify the connection modal (signed-in browser; no injected wallet detected)
 - [ ] Verify connect/disconnect with an actual Bitcoin wallet (requires the user's wallet extension and approval)
