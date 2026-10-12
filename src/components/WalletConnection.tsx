@@ -1,20 +1,56 @@
-import { TrustConnectProvider, useTrustModal, useConnection, useConnect } from "@trustwallet/connect-react";
+import { TrustConnectProvider, useConnection, useConnect, useWallets } from "@trustwallet/connect-headless";
+import { createContext, useContext, useState } from "react";
 import { createBIP122, mainnet } from "@trustwallet/connect-bip122-react";
 import { Wallet, Copy, Unplug, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const config = { namespaces: [createBIP122({ chain: mainnet })], services: [] };
+const WalletDialogContext = createContext<(() => void) | null>(null);
+
+export function useWalletDialog() {
+  const open = useContext(WalletDialogContext);
+  if (!open) throw new Error("Wallet dialog provider is missing");
+  return open;
+}
+
+function WalletDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { wallets } = useWallets({ namespaceId: "bip122" });
+  const { connect, disconnect, isLoading, error, clearError } = useConnect({ namespaceId: "bip122" });
+  const { isConnected, address } = useConnection({ namespaceId: "bip122" });
+  const connectWallet = async (wallet: (typeof wallets)[number]) => {
+    clearError();
+    try { await connect({ wallet }); onOpenChange(false); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Wallet connection failed"); }
+  };
+  return <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="max-w-sm">
+      <DialogHeader><DialogTitle>Connect a wallet</DialogTitle><DialogDescription>Bitcoin · Mainnet</DialogDescription></DialogHeader>
+      {isConnected ? <div className="space-y-3">
+        <code className="block break-all text-xs">{address}</code>
+        <Button variant="outline" onClick={() => { disconnect({ namespaceId: "bip122" }); onOpenChange(false); }}><Unplug />Disconnect</Button>
+      </div> : wallets.length ? <div className="space-y-2">{wallets.map(wallet => <Button key={wallet.id} className="w-full justify-start" variant="outline" disabled={isLoading} onClick={() => connectWallet(wallet)}><Wallet />{wallet.name}{isLoading ? " · Connecting…" : ""}</Button>)}</div> : <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">No Bitcoin wallet extension detected. Mobile pairing is not configured.</p>
+        <Button asChild variant="outline"><a href="https://trustwallet.com/download" target="_blank" rel="noopener noreferrer"><ExternalLink />Get Trust Wallet</a></Button>
+      </div>}
+      {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
+    </DialogContent>
+  </Dialog>;
+}
 
 export function WalletConnectionProvider({ children }: { children: React.ReactNode }) {
-  return <TrustConnectProvider config={config} theme="light">{children}</TrustConnectProvider>;
+  const [open, setOpen] = useState(false);
+  return <TrustConnectProvider config={config}><WalletDialogContext.Provider value={() => setOpen(true)}>
+    {children}<WalletDialog open={open} onOpenChange={setOpen} />
+  </WalletDialogContext.Provider></TrustConnectProvider>;
 }
 
 export function WalletConnectionButton() {
-  const { open } = useTrustModal();
+  const open = useWalletDialog();
   const { isConnected, address, isConnecting } = useConnection({ namespaceId: "bip122" });
-  return <Button size="sm" variant="outline" onClick={() => open({ type: "namespace", namespaceId: "bip122" })} disabled={isConnecting}>
+  return <Button size="sm" variant="outline" aria-label={isConnected ? "Manage connected wallet" : "Connect wallet"} onClick={open} disabled={isConnecting}>
     <Wallet /> <span className="hidden sm:inline">{isConnecting ? "Connecting…" : isConnected ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Connect wallet"}</span>
     <span className="sr-only sm:hidden">Connect wallet</span>
   </Button>;
