@@ -4,6 +4,9 @@
 - [x] Standardize Cloud White workspace, typography, navigation, and shared page controls
 - [x] Add TrustConnect Bitcoin wallet connection and verify the connection modal (signed-in browser; no injected wallet detected)
 - [ ] Verify connect/disconnect with an actual Bitcoin wallet (requires the user's wallet extension and approval)
+- [ ] Add a settings-based WalletConnect project ID flow, readiness/pairing status, and mobile pairing
+- [ ] Add Telegram account linking, send/receive inbox, and verified bot webhook
+- [ ] Add KoraPay sandbox issuing workspace for USD balances and virtual card actions (provider credentials and transfer API details required)
 
 - [x] MCP server (6 tools, OAuth 2.1) deployed at /functions/v1/mcp
 - [x] Agent Integrations page (/agent-integrations): MCP status, tool list, approved clients & scopes
