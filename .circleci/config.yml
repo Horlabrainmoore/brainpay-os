@@ -1,0 +1,37 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.2.0
+
+jobs:
+  validate:
+    executor:
+      name: node/default
+      tag: '22.16'
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-npm-deps-{{ checksum "package-lock.json" }}
+            - v1-npm-deps-
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - save_cache:
+          key: v1-npm-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Unit tests
+          command: npm test -- --run
+      - run:
+          name: Production build
+          command: npm run build
+
+workflows:
+  validate:
+    jobs:
+      - validate
