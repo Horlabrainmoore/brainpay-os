@@ -3,10 +3,10 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@3.1.1";
 
 // src/lib/mcp/tools/list-transactions.ts
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { defineTool } from "npm:@lovable.dev/mcp-js@3.1.1";
 import { z } from "npm:zod@^3.25.76";
 
 // src/lib/mcp/supabase.ts
@@ -42,7 +42,7 @@ var list_transactions_default = defineTool({
 });
 
 // src/lib/mcp/tools/list-trades.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@3.1.1";
 import { z as z2 } from "npm:zod@^3.25.76";
 var list_trades_default = defineTool2({
   name: "list_trades",
@@ -64,7 +64,7 @@ var list_trades_default = defineTool2({
 });
 
 // src/lib/mcp/tools/get-profile.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@3.1.1";
 var get_profile_default = defineTool3({
   name: "get_profile",
   title: "Get my profile",
@@ -83,7 +83,7 @@ var get_profile_default = defineTool3({
 });
 
 // src/lib/mcp/tools/get-btc-fees.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@3.1.1";
 var get_btc_fees_default = defineTool4({
   name: "get_btc_fees",
   title: "BTC recommended fees",
@@ -104,7 +104,7 @@ var get_btc_fees_default = defineTool4({
 });
 
 // src/lib/mcp/tools/lookup-btc-address.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@3.1.1";
 import { z as z3 } from "npm:zod@^3.25.76";
 var lookup_btc_address_default = defineTool5({
   name: "lookup_btc_address",
@@ -131,7 +131,7 @@ var lookup_btc_address_default = defineTool5({
 });
 
 // src/lib/mcp/tools/list-moonpay-events.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.23.0";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@3.1.1";
 import { z as z4 } from "npm:zod@^3.25.76";
 var list_moonpay_events_default = defineTool6({
   name: "list_moonpay_events",
@@ -174,5 +174,5 @@ var mcp_default = defineMcp({
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.23.0/stacks/supabase";
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@3.1.1/stacks/supabase";
 Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
