@@ -76,7 +76,8 @@ function Example() {
     />
   );
 },
-// Usage in a Next.js API route
+
+ // Usage in a Next.js API route
 import { settlePayment, facilitator } from "thirdweb/x402";
 import { createThirdwebClient } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
     request.headers.get("PAYMENT-SIGNATURE") ||
     request.headers.get("X-PAYMENT");
 
-  // verify and process the payment
+ // verify and process the payment
   const result = await settlePayment({
     resourceUrl: "https://t.me/mql5algotradings/9455",
     method: "POST",
