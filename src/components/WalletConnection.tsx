@@ -6,9 +6,57 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ethereum } from "thirdweb/chains";
+import { ConnectButton } from "thirdweb/react";
+import { createThirdwebClient } from "thirdweb";
+import { inAppWallet, createWallet } from "thirdweb/wallets";
 
 const config = { namespaces: [createBIP122({ chain: mainnet })], services: [] };
 const WalletDialogContext = createContext<(() => void) | null>(null);
+
+const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID;
+const thirdwebClient = thirdwebClientId ? createThirdwebClient({ clientId: thirdwebClientId }) : null;
+
+const thirdwebWallets = [
+  inAppWallet({
+    auth: {
+      options: [
+        "google",
+        "discord",
+        "telegram",
+        "email",
+        "x",
+        "passkey",
+        "phone",
+        "apple",
+        "github",
+        "farcaster",
+        "twitch",
+        "steam",
+        "facebook",
+        "line",
+        "guest",
+        "coinbase",
+        "epic",
+        "tiktok",
+      ],
+    },
+  }),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("me.rainbow"),
+  createWallet("io.zerion.wallet"),
+  createWallet("com.trustwallet.app"),
+  createWallet("com.bitcoin"),
+  createWallet("com.binance.wallet"),
+  createWallet("io.rabby"),
+  createWallet("com.safepal"),
+  createWallet("io.ironwallet"),
+  createWallet("pro.tokenpocket"),
+  createWallet("com.fireblocks"),
+  createWallet("com.blockchain.login"),
+  createWallet("com.bybit"),
+];
 
 export function useWalletDialog() {
   const open = useContext(WalletDialogContext);
@@ -107,6 +155,21 @@ export function WalletConnectionProvider({ children }: { children: React.ReactNo
 export function WalletConnectionButton() {
   const open = useWalletDialog();
   const { isConnected, address, isConnecting } = useConnection({ namespaceId: "bip122" });
+
+  if (thirdwebClient) {
+    return (
+      <ConnectButton
+        client={thirdwebClient}
+        connectButton={{ label: isConnected ? "Connected" : "Connect wallet" }}
+        connectModal={{ size: "compact" }}
+        accountAbstraction={{
+          chain: ethereum,
+          sponsorGas: true,
+        }}
+        wallets={thirdwebWallets}
+      />
+    );
+  }
 
   const label = isConnecting
     ? "Connecting…"
