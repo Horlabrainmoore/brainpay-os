@@ -6,9 +6,57 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ethereum } from "thirdweb/chains";
+import { ConnectButton } from "thirdweb/react";
+import { createThirdwebClient } from "thirdweb";
+import { inAppWallet, createWallet } from "thirdweb/wallets";
 
 const config = { namespaces: [createBIP122({ chain: mainnet })], services: [] };
 const WalletDialogContext = createContext<(() => void) | null>(null);
+
+const thirdwebClientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID;
+const thirdwebClient = thirdwebClientId ? createThirdwebClient({ clientId: thirdwebClientId }) : null;
+
+const thirdwebWallets = [
+  inAppWallet({
+    auth: {
+      options: [
+        "google",
+        "discord",
+        "telegram",
+        "email",
+        "x",
+        "passkey",
+        "phone",
+        "apple",
+        "github",
+        "farcaster",
+        "twitch",
+        "steam",
+        "facebook",
+        "line",
+        "guest",
+        "coinbase",
+        "epic",
+        "tiktok",
+      ],
+    },
+  }),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("me.rainbow"),
+  createWallet("io.zerion.wallet"),
+  createWallet("com.trustwallet.app"),
+  createWallet("com.bitcoin"),
+  createWallet("com.binance.wallet"),
+  createWallet("io.rabby"),
+  createWallet("com.safepal"),
+  createWallet("io.ironwallet"),
+  createWallet("pro.tokenpocket"),
+  createWallet("com.fireblocks"),
+  createWallet("com.blockchain.login"),
+  createWallet("com.bybit"),
+];
 
 export function useWalletDialog() {
   const open = useContext(WalletDialogContext);
@@ -20,63 +68,187 @@ function WalletDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (op
   const { wallets } = useWallets({ namespaceId: "bip122" });
   const { connect, disconnect, isLoading, error, clearError } = useConnect({ namespaceId: "bip122" });
   const { isConnected, address } = useConnection({ namespaceId: "bip122" });
+
   const connectWallet = async (wallet: (typeof wallets)[number]) => {
     clearError();
-    try { await connect({ wallet }); onOpenChange(false); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Wallet connection failed"); }
+    try {
+      await connect({ wallet });
+      onOpenChange(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Wallet connection failed");
+    }
   };
-  return <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-sm">
-      <DialogHeader><DialogTitle>Connect a wallet</DialogTitle><DialogDescription>Bitcoin · Mainnet</DialogDescription></DialogHeader>
-      {isConnected ? <div className="space-y-3">
-        <code className="block break-all text-xs">{address}</code>
-        <Button variant="outline" onClick={() => { disconnect({ namespaceId: "bip122" }); onOpenChange(false); }}><Unplug />Disconnect</Button>
-      </div> : wallets.length ? <div className="space-y-2">{wallets.map(wallet => <Button key={wallet.id} className="w-full justify-start" variant="outline" disabled={isLoading} onClick={() => connectWallet(wallet)}><Wallet />{wallet.name}{isLoading ? " · Connecting…" : ""}</Button>)}</div> : <div className="space-y-3">
-        <p className="text-sm text-muted-foreground">No Bitcoin wallet extension detected. Mobile pairing is not configured.</p>
-        <Button asChild variant="outline"><a href="https://trustwallet.com/download" target="_blank" rel="noopener noreferrer"><ExternalLink />Get Trust Wallet</a></Button>
-      </div>}
-      {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
-    </DialogContent>
-  </Dialog>;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Connect a wallet</DialogTitle>
+          <DialogDescription>Bitcoin · Mainnet</DialogDescription>
+        </DialogHeader>
+
+        {isConnected ? (
+          <div className="space-y-3">
+            <code className="block break-all text-xs">{address}</code>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                disconnect({ namespaceId: "bip122" });
+                onOpenChange(false);
+              }}
+            >
+              <Unplug />
+              Disconnect
+            </Button>
+          </div>
+        ) : wallets.length ? (
+          <div className="space-y-2">
+            {wallets.map((wallet) => (
+              <Button
+                key={wallet.id}
+                type="button"
+                className="w-full justify-start"
+                variant="outline"
+                disabled={isLoading}
+                onClick={() => connectWallet(wallet)}
+              >
+                <Wallet />
+                {wallet.name}
+                {isLoading ? " · Connecting…" : ""}
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              No Bitcoin wallet extension detected. Mobile pairing is not configured.
+            </p>
+            <Button asChild variant="outline" type="button">
+              <a href="https://trustwallet.com/download" target="_blank" rel="noopener noreferrer">
+                <ExternalLink />
+                Get Trust Wallet
+              </a>
+            </Button>
+          </div>
+        )}
+
+        {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 export function WalletConnectionProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  return <TrustConnectProvider config={config}><WalletDialogContext.Provider value={() => setOpen(true)}>
-    {children}<WalletDialog open={open} onOpenChange={setOpen} />
-  </WalletDialogContext.Provider></TrustConnectProvider>;
+
+  return (
+    <TrustConnectProvider config={config}>
+      <WalletDialogContext.Provider value={() => setOpen(true)}>
+        {children}
+        <WalletDialog open={open} onOpenChange={setOpen} />
+      </WalletDialogContext.Provider>
+    </TrustConnectProvider>
+  );
 }
 
 export function WalletConnectionButton() {
   const open = useWalletDialog();
   const { isConnected, address, isConnecting } = useConnection({ namespaceId: "bip122" });
-  return <Button size="sm" variant="outline" aria-label={isConnected ? "Manage connected wallet" : "Connect wallet"} onClick={open} disabled={isConnecting}>
-    <Wallet /> <span className="hidden sm:inline">{isConnecting ? "Connecting…" : isConnected ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Connect wallet"}</span>
-    <span className="sr-only sm:hidden">Connect wallet</span>
-  </Button>;
+
+  if (thirdwebClient) {
+    return (
+      <ConnectButton
+        client={thirdwebClient}
+        connectButton={{ label: isConnected ? "Connected" : "Connect wallet" }}
+        connectModal={{ size: "compact" }}
+        accountAbstraction={{
+          chain: ethereum,
+          sponsorGas: true,
+        }}
+        wallets={thirdwebWallets}
+      />
+    );
+  }
+
+  const label = isConnecting
+    ? "Connecting…"
+    : isConnected && address
+      ? `${address.slice(0, 6)}…${address.slice(-4)}`
+      : "Connect wallet";
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      aria-label={isConnected ? "Manage connected wallet" : "Connect wallet"}
+      onClick={open}
+      disabled={isConnecting}
+    >
+      <Wallet />
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sr-only sm:hidden">Connect wallet</span>
+    </Button>
+  );
 }
 
 export function WalletConnectionPanel() {
   const { isConnected, address, wallet, status } = useConnection({ namespaceId: "bip122" });
   const { disconnect } = useConnect();
+
   const copy = async () => {
     if (!address) return;
-    try { await navigator.clipboard.writeText(address); toast.success("Address copied"); }
-    catch { toast.error("Could not copy address"); }
+    try {
+      await navigator.clipboard.writeText(address);
+      toast.success("Address copied");
+    } catch {
+      toast.error("Could not copy address");
+    }
   };
-  return <section className="border-b border-border pb-6">
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-primary"><Wallet /></div>
-        <div><h3 className="text-sm font-semibold">Connected wallet</h3><p className="text-xs text-muted-foreground">Bitcoin · Mainnet · {status}</p></div>
+
+  return (
+    <section className="border-b border-border pb-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-primary">
+            <Wallet />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Connected wallet</h3>
+            <p className="text-xs text-muted-foreground">Bitcoin · Mainnet · {status}</p>
+          </div>
+        </div>
+
+        {isConnected ? (
+          <Button type="button" variant="outline" size="sm" onClick={() => disconnect({ namespaceId: "bip122" })}>
+            <Unplug />
+            Disconnect
+          </Button>
+        ) : (
+          <WalletConnectionButton />
+        )}
       </div>
-      {isConnected ? <Button variant="outline" size="sm" onClick={() => disconnect({ namespaceId: "bip122" })}><Unplug />Disconnect</Button> : <WalletConnectionButton />}
-    </div>
-    {isConnected ? <div className="mt-4 flex flex-wrap items-center gap-3">
-      <span className="text-sm font-medium">{wallet?.name}</span>
-      <code className="min-w-0 break-all text-xs text-muted-foreground">{address}</code>
-      <Button variant="ghost" size="icon" aria-label="Copy connected address" title="Copy address" onClick={copy}><Copy /></Button>
-      <Button asChild variant="link" size="sm"><Link to={`/wallets/utxos?address=${encodeURIComponent(address)}`}>View outputs<ExternalLink /></Link></Button>
-    </div> : <p className="mt-3 text-xs text-muted-foreground">No Bitcoin wallet connected. Keys and recovery phrases stay in your wallet.</p>}
-  </section>;
+
+      {isConnected ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <span className="text-sm font-medium">{wallet?.name}</span>
+          <code className="min-w-0 break-all text-xs text-muted-foreground">{address}</code>
+          <Button type="button" variant="ghost" size="icon" aria-label="Copy connected address" title="Copy address" onClick={copy}>
+            <Copy />
+          </Button>
+          <Button asChild variant="link" size="sm">
+            <Link to={`/wallets/utxos?address=${encodeURIComponent(address ?? "")}`}>
+              View outputs
+              <ExternalLink />
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-muted-foreground">
+          No Bitcoin wallet connected. Keys and recovery phrases stay in your wallet.
+        </p>
+      )}
+    </section>
+  );
 }

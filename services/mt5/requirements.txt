@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pydantic
+MetaTrader5
+python-dotenv
+structlog
+pytest
+httpx
+pytest-asyncio
+pytest-mock
