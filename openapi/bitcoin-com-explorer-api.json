@@ -1,0 +1,159 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bitcoin.com Explorer API",
+    "version": "0.1.0",
+    "description": "Read-only Bitcoin mainnet data. No key needed; 60 uncached requests per minute per IP. Extended public keys (xpub, ypub, zpub) have no JSON record: the MCP search tool resolves one to its explorer page."
+  },
+  "servers": [
+    {
+      "url": "https://www.bitcoin.com"
+    }
+  ],
+  "paths": {
+    "/explorer/btc/tx/{txid}/": {
+      "get": {
+        "operationId": "get_tx",
+        "summary": "Get a transaction",
+        "description": "Has this payment arrived, how much moved, and what fee did it pay? Send Accept: application/json or add ?format=json.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Txid"
+          },
+          {
+            "$ref": "#/components/parameters/JsonFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The transaction record, with a plain-English explanation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/explorer/btc/block/{id}/": {
+      "get": {
+        "operationId": "get_block",
+        "summary": "Get a block",
+        "description": "When was this block mined, how many transactions does it hold, and what did miners earn in fees? Send Accept: application/json or add ?format=json.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/BlockId"
+          },
+          {
+            "$ref": "#/components/parameters/JsonFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The block record, with a plain-English explanation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "Txid": {
+        "name": "txid",
+        "in": "path",
+        "required": true,
+        "description": "Transaction ID, 64 hexadecimal characters.",
+        "schema": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "example": "a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d"
+      },
+      "BlockId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Block height or a 64-hexadecimal block hash.",
+        "schema": {
+          "type": "string",
+          "pattern": "^(\\d+|[a-fA-F0-9]{64})$"
+        },
+        "example": "840000"
+      },
+      "JsonFormat": {
+        "name": "format",
+        "in": "query",
+        "required": false,
+        "description": "Set to json to get JSON without an Accept header. This form is CDN-cached.",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json"
+          ]
+        }
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "The request could not be fulfilled.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "error": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Record": {
+        "type": "object",
+        "description": "Bitcoin.com Explorer JSON record. The API may add fields over time.",
+        "additionalProperties": true,
+        "properties": {
+          "explanation": {
+            "type": "string",
+            "description": "Plain-English explanation of the record."
+          }
+        }
+      }
+    }
+  }
+}
