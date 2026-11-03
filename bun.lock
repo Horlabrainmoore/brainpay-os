@@ -37,6 +37,7 @@
         "@radix-ui/react-tooltip": "^1.2.7",
         "@supabase/supabase-js": "^2.105.1",
         "@tanstack/react-query": "^5.83.0",
+        "@trustwallet/connect-bip122-react": "^0.0.0",
         "@trustwallet/connect-react": "^0.0.0",
         "@trustwallet/connect-walletconnect": "^0.0.0",
         "class-variance-authority": "^0.7.1",
@@ -545,6 +546,10 @@
     "@testing-library/react": ["@testing-library/react@16.3.2", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@testing-library/react/-/react-16.3.2.tgz", { "dependencies": { "@babel/runtime": "^7.12.5" }, "peerDependencies": { "@testing-library/dom": "^10.0.0", "@types/react": "^18.0.0 || ^19.0.0", "@types/react-dom": "^18.0.0 || ^19.0.0", "react": "^18.0.0 || ^19.0.0", "react-dom": "^18.0.0 || ^19.0.0" }, "optionalPeers": ["@types/react", "@types/react-dom"] }, "sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g=="],
 
     "@tootallnate/once": ["@tootallnate/once@2.0.0", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@tootallnate/once/-/once-2.0.0.tgz", {}, "sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A=="],
+
+    "@trustwallet/connect-bip122-core": ["@trustwallet/connect-bip122-core@0.0.0", "", { "dependencies": { "@trustwallet/connect-bip122-types": "0.0.0", "@trustwallet/connect-core": "0.0.0", "@trustwallet/connect-utils": "0.0.0" } }, "sha512-iM/bf/a7/gTSkU71ptdmAuzlNflA59fUDRRLNb/XCu/QtkrqNNrVCrQCg4c58hdEYDzqEsaJVqHYyAw6zmJx5A=="],
+
+    "@trustwallet/connect-bip122-react": ["@trustwallet/connect-bip122-react@0.0.0", "", { "dependencies": { "@trustwallet/connect-bip122-core": "0.0.0", "@trustwallet/connect-headless": "0.0.0", "@trustwallet/connect-utils": "0.0.0" }, "peerDependencies": { "@tanstack/react-query": "^5.0.0", "@trustwallet/connect-core": "0.0.0", "react": "^18.0.0 || ^19.0.0" } }, "sha512-qcslH0hiM4/dRtWf3338moLqPel5lVZkZAtFCVQNgGROVsiakjbQYSFnSt5OZFmcddcuMdbU1O5+NXNq9cu0uQ=="],
 
     "@trustwallet/connect-bip122-types": ["@trustwallet/connect-bip122-types@0.0.0", "", { "peerDependencies": { "@trustwallet/connect-core": "0.0.0" } }, "sha512-ZQal3r57p4wM5RiMHe77M98bXsGTiqvBulMGPgBEsDz+ZtZlgqPy1pYAWKZvmuuv616mixgc5Z0BGQjFmX22Gw=="],
 
