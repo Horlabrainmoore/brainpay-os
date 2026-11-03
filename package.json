@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^2",
     "@hookform/resolvers": "^3.10.0",
     "@lovable.dev/mcp-js": "^0.23.0",
     "@mempool/mempool.js": "^3.0.0",
@@ -48,6 +49,7 @@
     "@trustwallet/connect-bip122-react": "^0.0.0",
     "@trustwallet/connect-react": "^0.0.0",
     "@trustwallet/connect-walletconnect": "^0.0.0",
+    "ai": "^5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
