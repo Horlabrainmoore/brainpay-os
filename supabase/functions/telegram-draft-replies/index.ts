@@ -4,7 +4,7 @@ import { createOpenAI } from "npm:@ai-sdk/openai@^2";
 import { streamObject } from "npm:ai@^5";
 import { z } from "npm:zod@^3";
 import { corsHeaders, jsonResponse, requireAdmin, serviceClient } from "../_shared/backend.ts";
-import { getLovableAiGatewayRunId } from "../_shared/run-id.ts";
+import { createLovableAiGatewayRunIdFetch, getLovableAiGatewayRunId } from "../_shared/run-id.ts";
 
 const draftSchema = z.strictObject({
   drafts: z
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       baseURL: "https://ai.gateway.lovable.dev/v1",
       apiKey,
       headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
-      fetch: (await import("../_shared/run-id.ts")).createLovableAiGatewayRunIdFetch(runIdFetchRunId).fetch,
+      fetch: createLovableAiGatewayRunIdFetch(runIdFetchRunId).fetch,
     });
 
     const result = streamObject({
