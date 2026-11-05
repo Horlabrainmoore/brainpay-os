@@ -13,6 +13,9 @@ import {
   Coins,
   Bot,
   CandlestickChart,
+  Smartphone,
+  Inbox,
+  Vault,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -34,6 +37,8 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Wallets", url: "/wallets", icon: Wallet },
   { title: "Wallet UTXOs", url: "/wallets/utxos", icon: Coins },
+  { title: "Mobile Wallet", url: "/wallet-setup", icon: Smartphone },
+  { title: "Issuing", url: "/issuing", icon: Vault },
   { title: "Trading", url: "/trading", icon: TrendingUp },
   { title: "MetaCopier", url: "/metacopier", icon: Copy },
   { title: "MoonPay", url: "/moonpay", icon: Coins },
@@ -45,6 +50,7 @@ const mainItems = [
 
 const insightItems = [
   { title: "AI Insights", url: "/ai-insights", icon: Brain },
+  { title: "Telegram Inbox", url: "/inbox", icon: Inbox },
   { title: "Agent Integrations", url: "/agent-integrations", icon: Bot },
   { title: "System Logs", url: "/logs", icon: FileText },
   { title: "Settings", url: "/settings", icon: Settings },

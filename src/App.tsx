@@ -22,6 +22,9 @@ import MoonPayUnsupportedPage from "./pages/MoonPayUnsupportedPage.tsx";
 import OAuthConsent from "./pages/OAuthConsent.tsx";
 import AgentIntegrationsPage from "./pages/AgentIntegrationsPage.tsx";
 import ExchangePage from "./pages/ExchangePage.tsx";
+import WalletSetupPage from "./pages/WalletSetupPage.tsx";
+import InboxPage from "./pages/InboxPage.tsx";
+import IssuingPage from "./pages/IssuingPage.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -53,6 +56,9 @@ const App = () => (
             <Route path="/settings" element={protect(<SettingsPage />)} />
             <Route path="/agent-integrations" element={protect(<AgentIntegrationsPage />)} />
             <Route path="/exchange" element={protect(<ExchangePage />)} />
+            <Route path="/wallet-setup" element={protect(<WalletSetupPage />)} />
+            <Route path="/inbox" element={protect(<InboxPage />)} />
+            <Route path="/issuing" element={protect(<IssuingPage />)} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
