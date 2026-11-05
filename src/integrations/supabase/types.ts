@@ -38,6 +38,60 @@ export type Database = {
         }
         Relationships: []
       }
+      issuing_balances: {
+        Row: {
+          available_usd: number
+          issuing_usd: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available_usd?: number
+          issuing_usd?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available_usd?: number
+          issuing_usd?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      issuing_transfers: {
+        Row: {
+          amount_usd: number
+          created_at: string
+          direction: string
+          id: string
+          note: string | null
+          reference: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_usd: number
+          created_at?: string
+          direction?: string
+          id?: string
+          note?: string | null
+          reference?: string | null
+          status: string
+          user_id: string
+        }
+        Update: {
+          amount_usd?: number
+          created_at?: string
+          direction?: string
+          id?: string
+          note?: string | null
+          reference?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       metacopier_proxy_logs: {
         Row: {
           correlation_id: string
@@ -275,6 +329,105 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_inbox_messages: {
+        Row: {
+          chat_id: number
+          created_at: string
+          raw: Json
+          sender_id: number | null
+          sender_name: string | null
+          sender_username: string | null
+          text: string | null
+          update_id: number
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          raw: Json
+          sender_id?: number | null
+          sender_name?: string | null
+          sender_username?: string | null
+          text?: string | null
+          update_id: number
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          raw?: Json
+          sender_id?: number | null
+          sender_name?: string | null
+          sender_username?: string | null
+          text?: string | null
+          update_id?: number
+        }
+        Relationships: []
+      }
+      telegram_reply_drafts: {
+        Row: {
+          created_at: string
+          draft_text: string
+          id: string
+          inbox_update_id: number | null
+          model: string | null
+          rationale: string | null
+          status: string
+          tone: string | null
+        }
+        Insert: {
+          created_at?: string
+          draft_text: string
+          id?: string
+          inbox_update_id?: number | null
+          model?: string | null
+          rationale?: string | null
+          status?: string
+          tone?: string | null
+        }
+        Update: {
+          created_at?: string
+          draft_text?: string
+          id?: string
+          inbox_update_id?: number | null
+          model?: string | null
+          rationale?: string | null
+          status?: string
+          tone?: string | null
+        }
+        Relationships: []
+      }
+      telegram_sent_messages: {
+        Row: {
+          chat_id: number
+          created_at: string
+          created_by: string | null
+          error: string | null
+          id: string
+          status: string
+          telegram_message_id: number | null
+          text: string
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          status?: string
+          telegram_message_id?: number | null
+          text: string
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          status?: string
+          telegram_message_id?: number | null
+          text?: string
+        }
+        Relationships: []
+      }
       trades: {
         Row: {
           amount: number
@@ -395,6 +548,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      walletconnect_settings: {
+        Row: {
+          project_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          project_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          project_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       webhook_deliveries: {
         Row: {
           attempts: number
@@ -448,10 +637,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      perform_issuing_transfer: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -578,6 +777,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+    },
   },
 } as const
