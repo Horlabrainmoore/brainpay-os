@@ -288,6 +288,8 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          operation_id: string | null
+          result: Json | null
           from_balance: string
           id: string
           to_balance: string
@@ -296,6 +298,8 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          operation_id?: string | null
+          result?: Json | null
           from_balance: string
           id?: string
           to_balance: string
@@ -304,6 +308,8 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          operation_id?: string | null
+          result?: Json | null
           from_balance?: string
           id?: string
           to_balance?: string
@@ -317,7 +323,7 @@ export type Database = {
     }
     Functions: {
       fund_issuing_balance: {
-        Args: { p_amount: number }
+        Args: { p_amount: number; p_operation_id: string }
         Returns: Database["public"]["Tables"]["user_balances"]["Row"]
       }
     }

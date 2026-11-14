@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,12 +18,13 @@ interface AddFundsDialogProps {
   onOpenChange: (open: boolean) => void;
   usdAvailable: number;
   usdIssuing: number;
-  onConfirm: (amount: number) => Promise<{ error: string | null }>;
+  onConfirm: (amount: number, operationId: string) => Promise<{ error: string | null }>;
 }
 
 const AMOUNT_PATTERN = /^\d+(\.\d{1,2})?$/;
 
 export function AddFundsDialog({ open, onOpenChange, usdAvailable, usdIssuing, onConfirm }: AddFundsDialogProps) {
+  const pendingOperation = useRef<{ amount: number; id: string } | null>(null);
   const [value, setValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,17 +39,26 @@ export function AddFundsDialog({ open, onOpenChange, usdAvailable, usdIssuing, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || submitting) return;
     setSubmitting(true);
-    const { error } = await onConfirm(amount);
-    setSubmitting(false);
-    if (error) {
-      toast.error(error);
-      return;
+    if (!pendingOperation.current || pendingOperation.current.amount !== amount) {
+      pendingOperation.current = { amount, id: crypto.randomUUID() };
     }
-    toast.success(`Added ${formatUsd(amount)} to your Issuing Balance`);
-    setValue("");
-    onOpenChange(false);
+    try {
+      const { error } = await onConfirm(amount, pendingOperation.current.id);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+      pendingOperation.current = null;
+      toast.success(`Added ${formatUsd(amount)} to your Issuing Balance`);
+      setValue("");
+      onOpenChange(false);
+    } catch {
+      toast.error("Unable to confirm transfer. Please retry.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -82,6 +92,7 @@ export function AddFundsDialog({ open, onOpenChange, usdAvailable, usdIssuing, o
               placeholder="0.00"
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              disabled={submitting}
               autoComplete="off"
             />
             <p className={exceedsAvailable ? "text-xs text-destructive" : "text-xs text-muted-foreground"}>{hint}</p>

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -13,7 +13,10 @@ export function useBalances() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const requestGeneration = useRef(0);
+
   const refresh = useCallback(async () => {
+    const generation = ++requestGeneration.current;
     if (!user) {
       setBalances(null);
       setLoading(false);
@@ -25,6 +28,7 @@ export function useBalances() {
       .select("usd_available, usd_issuing")
       .eq("user_id", user.id)
       .maybeSingle();
+    if (generation !== requestGeneration.current) return;
     if (error) {
       setBalances(null);
       setError(error.message);
@@ -39,11 +43,13 @@ export function useBalances() {
   }, [user]);
 
   useEffect(() => {
+    const generation = requestGeneration;
     refresh();
+    return () => { ++generation.current; };
   }, [refresh]);
 
-  const fundIssuingBalance = async (amount: number) => {
-    const { error } = await supabase.rpc("fund_issuing_balance", { p_amount: amount });
+  const fundIssuingBalance = async (amount: number, operationId: string) => {
+    const { error } = await supabase.rpc("fund_issuing_balance", { p_amount: amount, p_operation_id: operationId });
     if (!error) await refresh();
     return { error: error?.message ?? null };
   };
