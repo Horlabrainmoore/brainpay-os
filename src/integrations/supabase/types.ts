@@ -263,12 +263,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_balances: {
+        Row: {
+          updated_at: string
+          usd_available: number
+          usd_issuing: number
+          user_id: string
+        }
+        Insert: {
+          updated_at?: string
+          usd_available?: number
+          usd_issuing?: number
+          user_id: string
+        }
+        Update: {
+          updated_at?: string
+          usd_available?: number
+          usd_issuing?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      balance_transfers: {
+        Row: {
+          amount: number
+          created_at: string
+          from_balance: string
+          id: string
+          to_balance: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          from_balance: string
+          id?: string
+          to_balance: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          from_balance?: string
+          id?: string
+          to_balance?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      fund_issuing_balance: {
+        Args: { p_amount: number }
+        Returns: Database["public"]["Tables"]["user_balances"]["Row"]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -4,15 +4,20 @@ import { TransactionList } from "@/components/TransactionList";
 import { SignalCard } from "@/components/SignalCard";
 import { wallets, recentTransactions, tradeSignals, balanceHistory, tradingHistory, aiInsights, Transaction } from "@/lib/mock-data";
 import { Wallet, TrendingUp, CreditCard, Brain, ArrowUpRight, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AddFundsDialog } from "@/components/AddFundsDialog";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
-import { cn } from "@/lib/utils";
+import { cn, formatUsd } from "@/lib/utils";
 import { usePrices } from "@/hooks/usePrices";
 import { useTransactions } from "@/hooks/useTransactions";
-import { useMemo } from "react";
+import { useBalances } from "@/hooks/useBalances";
+import { useMemo, useState } from "react";
 
 export default function Dashboard() {
   const { prices, connected } = usePrices(["BTC", "ETH", "SOL"]);
   const { transactions } = useTransactions();
+  const { balances, error: balancesError, fundIssuingBalance } = useBalances();
+  const [fundsOpen, setFundsOpen] = useState(false);
 
   const totalBalance = useMemo(
     () => wallets.reduce((sum, w) => sum + w.balance * (prices[w.symbol]?.price ?? (w.usdValue / w.balance || 1)), 0),
@@ -40,6 +45,27 @@ export default function Dashboard() {
           <MetricCard title="Payments Processed" value="$1,538" change="5 transactions" changeType="neutral" icon={CreditCard} subtitle="this week" />
           <MetricCard title="AI Confidence" value="87%" change="3 active signals" changeType="positive" icon={Brain} subtitle="avg" />
         </div>
+
+        {/* Issuing balance */}
+        <div className="card-gradient rounded-lg border border-border p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-xs text-muted-foreground">Issuing Balance</p>
+            <p className="text-2xl font-bold text-foreground">{balances ? formatUsd(balances.usdIssuing) : "—"}</p>
+            <p className={cn("text-xs font-mono", balancesError ? "text-destructive" : "text-muted-foreground")}>
+              {balancesError ?? `USD Available: ${balances ? formatUsd(balances.usdAvailable) : "—"}`}
+            </p>
+          </div>
+          <Button size="sm" onClick={() => setFundsOpen(true)} disabled={!balances}>Add Funds</Button>
+        </div>
+        {balances && (
+          <AddFundsDialog
+            open={fundsOpen}
+            onOpenChange={setFundsOpen}
+            usdAvailable={balances.usdAvailable}
+            usdIssuing={balances.usdIssuing}
+            onConfirm={fundIssuingBalance}
+          />
+        )}
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
